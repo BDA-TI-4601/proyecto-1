@@ -211,3 +211,36 @@ select *
 from WORKS_ON
 inner join UBICATION 
 on UBICATION.u_id=WORKS_ON.wo_branch
+
+INSERT INTO PACKAGE_BRANCH VALUES
+	(5000, NULL, 1020, '102540254', 1),
+	(2000, NULL, 1017, '102540254', 1),
+	(12000, '2018-01-09', 1018, '304960870', 1),
+	(14000, '2018-04-09', 1019, '207440546', 1)
+
+/* Cantidad de dinero recaudado en sucursal */
+select sum(pb_total) as "Dinero recaudado"
+from PACKAGE_BRANCH
+where pb_delivery_date is not null
+
+/* Cantidad de paquetes según cliente en un período */ 
+select c_id as ID, c_name as Nombre, c_lname as Apellido, pb_id as Orden, p_reception_date as Fecha  
+from CLIENT 
+inner join PACKAGE_BRANCH on CLIENT.c_id=PACKAGE_BRANCH.pb_id_client
+inner join PACKAGE on PACKAGE_BRANCH.pb_id_package=PACKAGE.p_id
+where p_reception_date<'2018-04-10' and p_reception_date>'2017-01-01'
+order by c_id
+
+/* Monto promedio pagado por cliente */
+select c_name as Nombre, c_lname as Apellido, avg(pb_total) as "Promedio"
+from PACKAGE_BRANCH 
+inner join CLIENT on CLIENT.c_id=PACKAGE_BRANCH.pb_id_client
+inner join PACKAGE on PACKAGE_BRANCH.pb_id_package=PACKAGE.p_id
+where p_reception_date<'2019-02-10' and p_reception_date>'2017-01-01'
+group by c_name, c_lname
+
+/* Monto total para un tipo de paquete */
+select p_type as "Tipo paquete", sum(p_value) as "Total de montos"
+from PACKAGE
+where p_reception_date>'2017-01-01' and p_reception_date<'2019-01-31' and p_type=2
+group by p_type
