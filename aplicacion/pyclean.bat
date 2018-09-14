@@ -1,0 +1,11 @@
+
+ECHO OFF
+ECHO ...
+ECHO REMOVING FILES...
+
+CD src
+DEL *.pyc
+CD ..
+
+ECHO FINISH!
+
