@@ -2,7 +2,7 @@
 /* EXEC [CRIMSONKING\CRIMSONSQL].tempdb.dbo.sp_executesql N'CREATE DATABASE COURIERTEC_SJ;'; */
 
 CREATE DATABASE COURIERTEC_HEREDIA
-USE COURIERTEC_HEREDIA
+
 
 CREATE TABLE CLIENT_TYPE (
 	ct_id INT IDENTITY(1,1) PRIMARY KEY,
@@ -15,8 +15,8 @@ CREATE TABLE PROVINCE (
 );
 
 CREATE TABLE CLIENT (
-	c_id VARCHAR(30) PRIMARY KEY,
 	c_account INT IDENTITY(1,1) NOT NULL UNIQUE,
+	c_id VARCHAR(30) PRIMARY KEY,
 	c_name VARCHAR(30) NOT NULL,
 	c_lname VARCHAR(50) NOT NULL,
 	c_telephone VARCHAR(30) NOT NULL,
@@ -186,8 +186,10 @@ INSERT INTO WORKS_ON VALUES
 	(3 , '402540255', 3),
 	(3 , '203360569', 3)
 
-
-
+INSERT INTO PACKAGE_BRANCH VALUES
+	(25000, NULL, 1, '102540254', 1),
+	(12000, '2018-01-09', 1, '102540254', 1),
+	(142000, '2018-04-09', 3, '207440546', 1)
 
 select * from PROVINCE
 select * from CLIENT_TYPE
@@ -212,35 +214,23 @@ from WORKS_ON
 inner join UBICATION 
 on UBICATION.u_id=WORKS_ON.wo_branch
 
-INSERT INTO PACKAGE_BRANCH VALUES
-	(5000, NULL, 1020, '102540254', 1),
-	(2000, NULL, 1017, '102540254', 1),
-	(12000, '2018-01-09', 1018, '304960870', 1),
-	(14000, '2018-04-09', 1019, '207440546', 1)
-
-/* Cantidad de dinero recaudado en sucursal */
-select sum(pb_total) as "Dinero recaudado"
+select sum(pb_total)
 from PACKAGE_BRANCH
 where pb_delivery_date is not null
 
-/* Cantidad de paquetes según cliente en un período */ 
-select c_id as ID, c_name as Nombre, c_lname as Apellido, pb_id as Orden, p_reception_date as Fecha  
+select c_id, c_name, c_lname, pb_id, p_reception_date  
 from CLIENT 
 inner join PACKAGE_BRANCH on CLIENT.c_id=PACKAGE_BRANCH.pb_id_client
 inner join PACKAGE on PACKAGE_BRANCH.pb_id_package=PACKAGE.p_id
-where p_reception_date<'2018-04-10' and p_reception_date>'2017-01-01'
-order by c_id
+where p_reception_date<'2018-02-10' and p_reception_date>'2017-01-01'
 
-/* Monto promedio pagado por cliente */
-select c_name as Nombre, c_lname as Apellido, avg(pb_total) as "Promedio"
+select c_name, c_lname, avg(pb_total) as "promedio"
 from PACKAGE_BRANCH 
 inner join CLIENT on CLIENT.c_id=PACKAGE_BRANCH.pb_id_client
 inner join PACKAGE on PACKAGE_BRANCH.pb_id_package=PACKAGE.p_id
-where p_reception_date<'2019-02-10' and p_reception_date>'2017-01-01'
+where p_reception_date<'2018-02-10' and p_reception_date>'2017-01-01'
 group by c_name, c_lname
 
-/* Monto total para un tipo de paquete */
-select p_type as "Tipo paquete", sum(p_value) as "Total de montos"
+select sum(p_value) as "monto de paquetes"
 from PACKAGE
-where p_reception_date>'2017-01-01' and p_reception_date<'2019-01-31' and p_type=2
-group by p_type
+where p_reception_date>'2017-01-01' and p_reception_date<'2019-01-31' and p_type=3
