@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'login_module.ui'
-#
-# Created by: PyQt4 UI code generator 4.12.1
-#
-# WARNING! All changes made in this file will be lost!
-
 from PyQt4 import QtCore, QtGui
-import sys
+import sys, os
+from http_service import *
+sys.path.insert(0, os.getcwd() + "/ui")
+from register_module import *
+from client_module import *
+from employee_module1 import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -23,12 +22,27 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
-###########################   Window Login Class  #####################################
+###########################   Window Login Class  ###################################
 
 class Ui_Login(QtGui.QWidget):
     def __init__(self):
         QtGui.QWidget.__init__(self)
         self.setupUi(self)
+
+    # Open register window module if the user 
+    # wants to be part of the platform
+    def open_register_module(self):
+        self.window = QtGui.QMainWindow()
+        self.ui = Ui_RegisterClient()
+        self.ui.setupUi(self.window)
+        self.window.show()
+
+    def open_session_module(self):
+        self.window = QtGui.QMainWindow()
+        self.ui = Ui_ClientModule() ######
+        self.ui.setupUi(self.window)
+        self.window.show()
+        self.setVisible(False)
 
     def setupUi(self, Login):
         Login.setObjectName(_fromUtf8("Login"))
@@ -44,6 +58,7 @@ class Ui_Login(QtGui.QWidget):
         self.password_data = QtGui.QLineEdit(Login)
         self.password_data.setGeometry(QtCore.QRect(340, 80, 191, 33))
         self.password_data.setObjectName(_fromUtf8("password_data"))
+        self.password_data.setEchoMode(QtGui.QLineEdit.Password)
         self.login_button = QtGui.QPushButton(Login)
         self.login_button.setGeometry(QtCore.QRect(340, 140, 90, 35))
         self.login_button.setObjectName(_fromUtf8("login_button"))
@@ -75,23 +90,26 @@ class Ui_Login(QtGui.QWidget):
         self.label_username.setText(_translate("Login", "Username:", None))
         self.label_password.setText(_translate("Login", "Password:", None))
         self.login_button.clicked.connect(send_login_request)
-        self.register_button.clicked.connect(open_register_module)
+        self.register_button.clicked.connect(self.open_register_module)
         self.quit_button.clicked.connect(self.close)
 
 
-###########################   Window Login Functions  #####################################
+###########################   Window Login Functions  ################################
 
 # Check the user's credentials & show new window 
 # according with the user type 
 def send_login_request():
-    print "Login request"
     if (login_window.user_data.text() == "" or login_window.password_data.text() == ""):
         show_message("Please insert the required information", "Warning", False)
     else:
-        pass
-        # Se envia login request con los datos
-        # Se parsea json recibido
-        #Se carga una nueva ventana (admin, empleado, cliente)
+        #Send login request to server API
+        login_json["username"] = login_window.user_data.text()
+        login_json["password"] = login_window.password_data.text()
+        login_response = send_request(login_request, login_json, 0) ####
+        print login_response
+        login_window.open_session_module()
+        # Parsing received json data
+        #Open user's session (admin, employee, client)
 
 # Show warning/info message to prevent 
 # something wrong with the app
@@ -106,13 +124,8 @@ def show_message(pmessage, ptitle, pinfo):
     msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
     msg_box.exec_()
 
-# Open register window module if the user wants to be part of the platform
-def open_register_module():
-    pass
-
 
 ###########################   Window Login Init  #####################################
-
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
