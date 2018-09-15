@@ -37,10 +37,10 @@ def get_worker_by_username( p_username ):
 
 def get_worker_job_by_id( w_id ):
     job = 0
-    query_worker_job = (    "SELECT j.j_name FROM JOB as j"
-                            "INNER JOIN WORKS_ON as wo"
-                            "ON j.j_id=wo.wo_job"
-                            "WHERE wo.wo_worker='"+str(w_id)+"'")
+    query_worker_job = ("SELECT j.j_name FROM JOB as j "
+                        "INNER JOIN WORKS_ON as wo "
+                        "ON j.j_id=wo.wo_job "
+                        "WHERE wo.wo_worker='"+str(w_id)+"'")
     database_info = new_query( query_worker_job )
     content = database_info.fetchall()
     if( len_database_info( content ) == 1 ):
