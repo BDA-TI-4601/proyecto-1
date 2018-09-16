@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtCore, QtGui
+from http_service import *
+from login_module import *
+from client_module import *
+from messages import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -16,10 +20,23 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
-class Ui_RegisterClient(object):
+class Ui_RegisterClient(QtGui.QWidget):
+
+    def __init__(self):
+        QtGui.QWidget.__init__(self)
+        self.setupUi(self) 
+
+    def open_session_module(self):
+        self.window = QtGui.QMainWindow()
+        self.ui = Ui_ClientModule() ######
+        self.ui.setupUi(self.window)
+        self.window.show()
+        self.close()   # no sirve esta mierdaaaaa AHHHHH!!!!!!
+
+
     def setupUi(self, RegisterClient):
         RegisterClient.setObjectName(_fromUtf8("RegisterClient"))
-        RegisterClient.resize(446, 282)
+        RegisterClient.setFixedSize(446, 282)
         font = QtGui.QFont()
         font.setFamily(_fromUtf8("Ubuntu"))
         RegisterClient.setFont(font)
@@ -78,9 +95,9 @@ class Ui_RegisterClient(object):
         self.label_img.setText(_fromUtf8(""))
         self.label_img.setPixmap(QtGui.QPixmap(_fromUtf8("images/info.png")))
         self.label_img.setObjectName(_fromUtf8("label_img"))
-
         self.retranslateUi(RegisterClient)
         QtCore.QMetaObject.connectSlotsByName(RegisterClient)
+        self.window_assoc = QtGui.QMainWindow()
 
     def retranslateUi(self, RegisterClient):
         RegisterClient.setWindowTitle(_translate("RegisterClient", "CourierTEC - Register Client", None))
@@ -92,4 +109,32 @@ class Ui_RegisterClient(object):
         self.label_tel.setText(_translate("RegisterClient", "Telephone:", None))
         self.label_type.setText(_translate("RegisterClient", "Client Type:", None))
         self.label_prov.setText(_translate("RegisterClient", "Province:", None))
+        self.register_button.clicked.connect(self.send_register_request)
 
+    def set_register_json(self):
+        register_json["name"] = self.name_data.text()
+        register_json["lastname"] = self.lname_data.text()
+        register_json["id"] = self.id_data.text()
+        register_json["account"] = self.account_data.text()
+        register_json["telephone"] = self.tel_data.text()
+        register_json["type"] = self.type_data.text()
+        register_json["province"] = self.prov_data.text()
+
+
+    def send_register_request(self):
+        if (self.name_data.text() == "" or self.lname_data.text() == "" or self.id_data.text() == "" or self.account_data.text() == "" or self.tel_data.text() == "" or self.type_data.text() == "" or self.prov_data.text() == ""):
+            show_message("Please insert the required information", "Warning", False)
+        else:
+            #Send register request to server API
+           # self.set_register_json()
+           # register_response = send_request(register_request, register_json, 1) ####
+           # if (register_response["status"] == OK):
+           #     self.open_session_module()   
+           self.open_session_module()
+            # else:
+            #    show_message("Can't register user, try again.", "Failed", False)
+
+
+    
+
+    

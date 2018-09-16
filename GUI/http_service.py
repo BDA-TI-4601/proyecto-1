@@ -5,14 +5,15 @@ import requests
 IP = "httpbin.org"
 PORT = ""
 HTTP = "http://"
+OK = "200"
 
 ##########################    LINKS  ########################################
 
 # login request
-login_request = HTTP + IP + PORT + "/ip"
+login_request = HTTP + IP + PORT + "/login"
 
 #register client request
-register_request = HTTP + IP + PORT 
+register_request = HTTP + IP + PORT + "/register"
 
 
 ##########################    REQUEST FUNCTION   #############################
@@ -31,4 +32,6 @@ def send_request(plink, pdata, isPost):
 
 # Login JSON
 login_json = {"username":"", "password":""}
-#register_json = {}
+register_json = {"name":"", "lastname":"", "id":"","account":"","telephone":"","type":"","province":""}
+
+

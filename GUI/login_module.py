@@ -7,6 +7,7 @@ sys.path.insert(0, os.getcwd() + "/ui")
 from register_module import *
 from client_module import *
 from employee_module1 import *
+from messages import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -27,6 +28,7 @@ except AttributeError:
 class Ui_Login(QtGui.QWidget):
     def __init__(self):
         QtGui.QWidget.__init__(self)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
         self.setupUi(self)
 
     # Open register window module if the user 
@@ -34,19 +36,21 @@ class Ui_Login(QtGui.QWidget):
     def open_register_module(self):
         self.window = QtGui.QMainWindow()
         self.ui = Ui_RegisterClient()
+        self.ui.window_assoc = self.ui
         self.ui.setupUi(self.window)
         self.window.show()
+        self.close()
 
     def open_session_module(self):
         self.window = QtGui.QMainWindow()
         self.ui = Ui_ClientModule() ######
         self.ui.setupUi(self.window)
         self.window.show()
-        self.setVisible(False)
+        self.close()
 
     def setupUi(self, Login):
         Login.setObjectName(_fromUtf8("Login"))
-        Login.resize(546, 235)
+        Login.setFixedSize(546, 235)
         font = QtGui.QFont()
         font.setFamily(_fromUtf8("Ubuntu"))
         font.setBold(True)
@@ -105,24 +109,13 @@ def send_login_request():
         #Send login request to server API
         login_json["username"] = login_window.user_data.text()
         login_json["password"] = login_window.password_data.text()
-        login_response = send_request(login_request, login_json, 0) ####
-        print login_response
+     #   login_response = send_request(login_request, login_json, 0) ####
+     #   print login_response
         login_window.open_session_module()
         # Parsing received json data
         #Open user's session (admin, employee, client)
 
-# Show warning/info message to prevent 
-# something wrong with the app
-def show_message(pmessage, ptitle, pinfo):
-    msg_box = QtGui.QMessageBox()
-    if (pinfo):
-        msg_box.setIcon(QtGui.QMessageBox.Information)
-    else:
-        msg_box.setIcon(QtGui.QMessageBox.Warning)
-    msg_box.setText(pmessage)
-    msg_box.setWindowTitle(ptitle)
-    msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
-    msg_box.exec_()
+
 
 
 ###########################   Window Login Init  #####################################

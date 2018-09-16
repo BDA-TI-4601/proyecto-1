@@ -19,7 +19,7 @@ except AttributeError:
 class Ui_EmployeeModule2(object):
     def setupUi(self, EmployeeModule2):
         EmployeeModule2.setObjectName(_fromUtf8("EmployeeModule2"))
-        EmployeeModule2.resize(655, 343)
+        EmployeeModule2.setFixedSize(655, 343)
         self.logo = QtGui.QLabel(EmployeeModule2)
         self.logo.setGeometry(QtCore.QRect(500, 120, 151, 161))
         self.logo.setText(_fromUtf8(""))

@@ -11,3 +11,11 @@ CourierTEC posee tres módulos que permiten su funcionamiento: interfaz gráfica
 [aplicacion](https://github.com/BDA-TI-4601/proyecto-1/tree/master/aplicacion): Creado mediante Python.
 
 [baseDatos](https://github.com/BDA-TI-4601/proyecto-1/tree/master/baseDatos): Modelo relacional creado en SQL Server.
+
+
+### Ejecución
+
+Para ejecutar el código, utilice el IDLE de Python. También, por medio de una terminal, puede ejecutar el siguiente comando:  
+
+
+    $ python −B login_module.py

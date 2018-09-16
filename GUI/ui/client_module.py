@@ -16,10 +16,10 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
-class Ui_ClientModule(object):
+class Ui_ClientModule(QtGui.QWidget):
     def setupUi(self, ClientModule):
         ClientModule.setObjectName(_fromUtf8("ClientModule"))
-        ClientModule.resize(903, 468)
+        ClientModule.setFixedSize(903, 468)
         self.label_img = QtGui.QLabel(ClientModule)
         self.label_img.setGeometry(QtCore.QRect(720, 280, 161, 161))
         self.label_img.setText(_fromUtf8(""))
