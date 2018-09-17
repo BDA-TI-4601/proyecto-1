@@ -2,8 +2,8 @@ import requests
 
 # Peticiones al servidor API 
 
-IP = "httpbin.org"
-PORT = ""
+IP = ""
+PORT = "8888"
 HTTP = "http://"
 OK = "200"
 
@@ -14,6 +14,9 @@ login_request = HTTP + IP + PORT + "/login"
 
 #register client request
 register_request = HTTP + IP + PORT + "/register"
+
+#new package request
+package_request = HTTP + IP + PORT + "/package"
 
 
 ##########################    REQUEST FUNCTION   #############################
@@ -33,5 +36,6 @@ def send_request(plink, pdata, isPost):
 # Login JSON
 login_json = {"username":"", "password":""}
 register_json = {"name":"", "lastname":"", "id":"","account":"","telephone":"","type":"","province":""}
+package_json = {}
 
 

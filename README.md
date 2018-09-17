@@ -18,4 +18,4 @@ CourierTEC posee tres módulos que permiten su funcionamiento: interfaz gráfica
 Para ejecutar el código, utilice el IDLE de Python. También, por medio de una terminal, puede ejecutar el siguiente comando:  
 
 
-    $ python −B login_module.py
+    $ python −B init.py
