@@ -2,9 +2,9 @@ from PyQt4 import QtGui
 
 # Show warning/info message to prevent 
 # something wrong with the app
-def show_message(pmessage, ptitle, pinfo):
+def show_message(pmessage, ptitle, isInfo):
     msg_box = QtGui.QMessageBox()
-    if (pinfo):
+    if (isInfo):
         msg_box.setIcon(QtGui.QMessageBox.Information)
     else:
         msg_box.setIcon(QtGui.QMessageBox.Warning)
