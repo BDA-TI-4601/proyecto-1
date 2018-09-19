@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtCore, QtGui
+from filler import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -59,8 +60,27 @@ class Ui_ClientModule(QtGui.QWidget):
         self.table_client_packages = QtGui.QTableWidget(ClientModule)
         self.table_client_packages.setGeometry(QtCore.QRect(10, 100, 681, 341))
         self.table_client_packages.setObjectName(_fromUtf8("table_client_packages"))
-        self.table_client_packages.setColumnCount(0)
+        self.table_client_packages.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.table_client_packages.setDragDropOverwriteMode(False)
+        self.table_client_packages.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.table_client_packages.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.table_client_packages.setWordWrap(False)
+        self.table_client_packages.setSortingEnabled(False)
+        self.table_client_packages.setColumnCount(PACKAGE_COLS)
         self.table_client_packages.setRowCount(0)
+        self.table_client_packages.horizontalHeader().setDefaultAlignment(QtCore.Qt.AlignHCenter|
+                                                                          QtCore.Qt.AlignVCenter|
+                                                                          QtCore.Qt.AlignCenter)
+        self.table_client_packages.horizontalHeader().setHighlightSections(False)
+        self.table_client_packages.horizontalHeader().setStretchLastSection(True)
+        self.table_client_packages.verticalHeader().setVisible(False)
+        self.table_client_packages.setAlternatingRowColors(True)
+        self.table_client_packages.verticalHeader().setDefaultSectionSize(20)
+        self.table_client_packages.setHorizontalHeaderLabels(package_columns)            
+        for i, width in enumerate((80, 120, 120, 110, 150), start=0):
+            self.table_client_packages.setColumnWidth(i, width)
+        fill_table(self.table_client_packages, packages_data, PACKAGE_COLS)
+
         self.label = QtGui.QLabel(ClientModule)
         self.label.setGeometry(QtCore.QRect(680, 30, 41, 51))
         self.label.setText(_fromUtf8(""))
@@ -77,7 +97,6 @@ class Ui_ClientModule(QtGui.QWidget):
         self.id_client.setText(_translate("ClientModule", "# cliente", None))
         self.label_package.setText(_translate("ClientModule", "Check your Packages", None))
         self.logout_button.setText(_translate("ClientModule", "Log Out", None))
-        #self.connect(self.logout_button, QtCore.SIGNAL('clicked()'), QtGui.qApp, QtCore.SLOT('quit()'))
         self.logout_button.clicked.connect(lambda: self.log_out_action(ClientModule))
     
     def set_tmp_login(self, plogin):
@@ -90,7 +109,3 @@ class Ui_ClientModule(QtGui.QWidget):
     def set_client_data(self, pname, pid):
         self.name_client.setText(pname)
         self.id_client.setText(pid)
-
-    def fill_table(self):
-        #self.table_client_packages.
-        pass

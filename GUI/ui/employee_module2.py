@@ -3,6 +3,7 @@
 from PyQt4 import QtCore, QtGui
 from http_service import *
 from messages import *
+from filler import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -90,12 +91,17 @@ class Ui_EmployeeModule2(QtGui.QWidget):
         self.description_data = QtGui.QLineEdit(EmployeeModule2)
         self.description_data.setGeometry(QtCore.QRect(370, 90, 101, 33))
         self.description_data.setObjectName(_fromUtf8("description_data"))
+
         self.type_data = QtGui.QComboBox(EmployeeModule2)
         self.type_data.setGeometry(QtCore.QRect(140, 240, 91, 33))
         self.type_data.setObjectName(_fromUtf8("type_data"))
+        fill_boxes(self.type_data, type_package_data)
+
         self.category_data = QtGui.QComboBox(EmployeeModule2)
         self.category_data.setGeometry(QtCore.QRect(140, 190, 91, 33))
         self.category_data.setObjectName(_fromUtf8("category_data"))
+        fill_boxes(self.category_data, category_package_data)
+
         self.setWindowIcon(QtGui.QIcon('images/logo.png'))
         self.retranslateUi(EmployeeModule2)
         QtCore.QMetaObject.connectSlotsByName(EmployeeModule2)
@@ -127,9 +133,9 @@ class Ui_EmployeeModule2(QtGui.QWidget):
 
 
     def send_package_request(self, module):
-        if (self.label_2.text().isEmpty() or self.label_3.text().isEmpty() or self.label_4.text().isEmpty() or
-         self.label_5.text().isEmpty() or self.label_date.text().isEmpty() or self.label_7.text().isEmpty() or 
-         self.label_8.text().isEmpty() or self.label_9.text().isEmpty()):
+        if (self.owner_data.text().isEmpty() or self.weight_data.text().isEmpty() or
+         self.reception_date_data.text().isEmpty() or self.amount_data.text().isEmpty() or 
+         self.value_data.text().isEmpty() or self.description_data.text().isEmpty()):
             show_message("Please insert the required information", "Warning", False)
         else:
             #Send package request to server API

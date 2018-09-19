@@ -9,6 +9,7 @@ from register_module import *
 from client_module import *
 from employee_module1 import *
 from employee_module2 import *
+from filler import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -70,7 +71,10 @@ class Ui_Login(QtGui.QWidget):
         self.retranslateUi(Login)
         QtCore.QMetaObject.connectSlotsByName(Login)
         self.setWindowIcon(QtGui.QIcon('images/logo.png'))
-
+        self.province = QtGui.QComboBox(Login)
+        self.province.setGeometry(QtCore.QRect(200, 180, 113, 33))
+        self.province.setObjectName(_fromUtf8("province"))
+        fill_boxes(self.province, provinces)
 
     def retranslateUi(self, Login):
         Login.setWindowTitle(_translate("Login", "CourierTEC Platform System", None))
@@ -87,7 +91,7 @@ class Ui_Login(QtGui.QWidget):
     # Check the user's credentials & show new window 
     # according with the user type 
     def send_login_request(self, module):
-        if (self.user_data.text().isEmpty() or self.password_data.text().isEmpty() ):
+        if (self.user_data.text().isEmpty() or self.password_data.text().isEmpty()):
             show_message("Please insert the required information", "Warning", False)
         else:
             #Send login request to server API
@@ -98,7 +102,7 @@ class Ui_Login(QtGui.QWidget):
             #if (login_response["type"] = "client"):
             #    self.open_module(module)
             #elif (login_response["type"] = "employee"):
-            self.open_employee_module(module)
+            self.open_client_module(module)
             #else:
             #    self.open_module(module)
             # Parsing received json data
@@ -116,7 +120,7 @@ class Ui_Login(QtGui.QWidget):
         self.window = QtGui.QMainWindow()
         self.ui = Ui_ClientModule() ######
         self.ui.setupUi(self.window)
-        self.ui.set_client_data(self.user_data.text(), "15789655") # Pedir nombre, id cliente y datos de los paquetes 
+        self.ui.set_client_data(self.user_data.text(), "Admin Info") # Pedir nombre, id cliente y datos de los paquetes 
         self.ui.set_tmp_login(module)
         self.window.show()
         self.hide()
@@ -125,7 +129,7 @@ class Ui_Login(QtGui.QWidget):
         self.window = QtGui.QMainWindow()
         self.ui = Ui_EmployeeModule1()
         self.ui.setupUi(self.window)
-        self.ui.set_employee_data(self.user_data.text(), "15789655")
+        self.ui.set_employee_data(self.user_data.text(), "ID Employee")
         self.ui.set_tmp_login(module)
         self.window.show()
         self.hide()

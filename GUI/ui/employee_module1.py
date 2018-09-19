@@ -2,6 +2,7 @@
 
 from PyQt4 import QtCore, QtGui
 from employee_module2 import *
+from filler import *
 
 
 try:
@@ -35,8 +36,27 @@ class Ui_EmployeeModule1(QtGui.QWidget):
         self.all_packages_table = QtGui.QTableWidget(EmployeeModule1)
         self.all_packages_table.setGeometry(QtCore.QRect(20, 120, 691, 321))
         self.all_packages_table.setObjectName(_fromUtf8("all_packages_table"))
-        self.all_packages_table.setColumnCount(0)
+        self.all_packages_table.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.all_packages_table.setDragDropOverwriteMode(False)
+        self.all_packages_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.all_packages_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.all_packages_table.setWordWrap(False)
+        self.all_packages_table.setSortingEnabled(False)
+        self.all_packages_table.setColumnCount(PACKAGE_COLS)
         self.all_packages_table.setRowCount(0)
+        self.all_packages_table.horizontalHeader().setDefaultAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter|
+                                                          QtCore.Qt.AlignCenter)
+        self.all_packages_table.horizontalHeader().setHighlightSections(False)
+        self.all_packages_table.horizontalHeader().setStretchLastSection(True)
+        self.all_packages_table.verticalHeader().setVisible(False)
+        self.all_packages_table.setAlternatingRowColors(True)
+        self.all_packages_table.verticalHeader().setDefaultSectionSize(20)
+        self.all_packages_table.setHorizontalHeaderLabels(package_columns)            
+        for i, width in enumerate((80, 120, 120, 110, 150), start=0):
+            self.all_packages_table.setColumnWidth(i, width)
+
+        fill_table(self.all_packages_table, packages_data, PACKAGE_COLS)
+
         self.label_name = QtGui.QLabel(EmployeeModule1)
         self.label_name.setGeometry(QtCore.QRect(750, 120, 60, 26))
         font = QtGui.QFont()
@@ -102,7 +122,21 @@ class Ui_EmployeeModule1(QtGui.QWidget):
         self.label_id.setText(_translate("EmployeeModule1", "ID", None))
         self.new_package_button.clicked.connect(self.open_package_form)
         self.logout_button.clicked.connect(lambda: self.logout_action(EmployeeModule1))
+        self.all_packages_table.cellDoubleClicked.connect(self.show_confirm_delete)  
 
+
+   #     item = self.table.itemAt(row, column)
+    def show_confirm_delete(self, prow, pcolumn):
+        ret = question_message(self, 'Delete', "Are you sure you want to delete package?")
+        if (ret == QtGui.QMessageBox.Yes):
+            #http request para eliminar paquetes
+            print("Row %d and Column %d was deleted" % (prow, pcolumn))
+            delete_row(packages_data, prow)
+            fill_table(self.all_packages_table, packages_data, PACKAGE_COLS)
+        else:
+            pass
+
+     
     def set_tmp_login(self, plogin):
         self.login_tmp = plogin
 
@@ -119,7 +153,3 @@ class Ui_EmployeeModule1(QtGui.QWidget):
     def set_employee_data(self, pname, pid):
         self.label_name.setText(pname)
         self.label_id.setText(pid)
-
-    def fill_table(self):
-        #self.table_client_packages.
-        pass

@@ -12,3 +12,10 @@ def show_message(pmessage, ptitle, isInfo):
     msg_box.setWindowTitle(ptitle)
     msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
     msg_box.exec_()
+
+
+def question_message(pself, ptitle, pmsg):
+    msg_box = QtGui.QMessageBox()
+    return msg_box.question(pself, ptitle, pmsg, msg_box.Yes | msg_box.No)
+    
+    

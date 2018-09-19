@@ -3,6 +3,7 @@
 from PyQt4 import QtCore, QtGui
 from http_service import *
 from messages import *
+from filler import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -51,9 +52,11 @@ class Ui_RegisterClient(QtGui.QWidget):
         self.tel_data.setGeometry(QtCore.QRect(110, 150, 113, 33))
         self.tel_data.setText(_fromUtf8(""))
         self.tel_data.setObjectName(_fromUtf8("tel_data"))
-        self.type_data = QtGui.QLineEdit(RegisterClient)
+        self.type_data = QtGui.QComboBox(RegisterClient)
         self.type_data.setGeometry(QtCore.QRect(110, 180, 113, 33))
         self.type_data.setObjectName(_fromUtf8("type_data"))
+        fill_boxes(self.type_data, type_client_data)
+                
         self.prov_data = QtGui.QLineEdit(RegisterClient)
         self.prov_data.setGeometry(QtCore.QRect(110, 210, 113, 33))
         self.prov_data.setObjectName(_fromUtf8("prov_data"))
