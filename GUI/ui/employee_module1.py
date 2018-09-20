@@ -20,6 +20,9 @@ except AttributeError:
         return QtGui.QApplication.translate(context, text, disambig)
 
 
+###########################   Window Employee Class  ###################################
+
+
 class Ui_EmployeeModule1(QtGui.QWidget):
 
     def setupUi(self, EmployeeModule1):
@@ -124,8 +127,7 @@ class Ui_EmployeeModule1(QtGui.QWidget):
         self.logout_button.clicked.connect(lambda: self.logout_action(EmployeeModule1))
         self.all_packages_table.cellDoubleClicked.connect(self.show_confirm_delete)  
 
-
-   #     item = self.table.itemAt(row, column)
+    # Function that handles the confirmation about delete some package
     def show_confirm_delete(self, prow, pcolumn):
         ret = question_message(self, 'Delete', "Are you sure you want to delete package?")
         if (ret == QtGui.QMessageBox.Yes):
@@ -136,20 +138,23 @@ class Ui_EmployeeModule1(QtGui.QWidget):
         else:
             pass
 
-     
+     # Helps closing the login window and starts session
     def set_tmp_login(self, plogin):
         self.login_tmp = plogin
 
+    # Open package form in order to create a new package
     def open_package_form(self):
         self.window = QtGui.QMainWindow()
         self.ui = Ui_EmployeeModule2()
         self.ui.setupUi(self.window)
         self.window.show()
 
+    # Sign Out
     def logout_action(self, module):
         module.hide()
         self.login_tmp.show()
 
+    #Set employee information
     def set_employee_data(self, pname, pid):
         self.label_name.setText(pname)
         self.label_id.setText(pid)

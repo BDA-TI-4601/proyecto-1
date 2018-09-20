@@ -18,6 +18,8 @@ except AttributeError:
         return QtGui.QApplication.translate(context, text, disambig)
 
 
+###########################   Window Client Class  ###################################
+
 class Ui_ClientModule(QtGui.QWidget):
 
     def setupUi(self, ClientModule):
@@ -99,13 +101,16 @@ class Ui_ClientModule(QtGui.QWidget):
         self.logout_button.setText(_translate("ClientModule", "Log Out", None))
         self.logout_button.clicked.connect(lambda: self.log_out_action(ClientModule))
     
+    # Helps closing the login window and starts session
     def set_tmp_login(self, plogin):
         self.login_tmp = plogin
 
+    #Sign out 
     def log_out_action(self, module):
         module.hide()
         self.login_tmp.show()
 
+    #Set the client info 
     def set_client_data(self, pname, pid):
         self.name_client.setText(pname)
         self.id_client.setText(pid)

@@ -19,6 +19,7 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
+###########################   Window Package Form Class  ###################################
 
 
 class Ui_EmployeeModule2(QtGui.QWidget):
@@ -120,7 +121,7 @@ class Ui_EmployeeModule2(QtGui.QWidget):
         self.register_new_package_button.setText(_translate("EmployeeModule2", "Register New Package", None))
         self.register_new_package_button.clicked.connect(lambda: self.send_package_request(EmployeeModule2) )
 
-
+    # Make json with the specific info about new package 
     def set_package_json(self):
         pass
    #     package_json["name"] = self.name_data.text()
@@ -131,7 +132,8 @@ class Ui_EmployeeModule2(QtGui.QWidget):
    #     package_json["type"] = self.type_data.text()
    #     package_json["province"] = self.prov_data.text()
 
-
+    
+    #Send the information to the database in order to save the new package info
     def send_package_request(self, module):
         if (self.owner_data.text().isEmpty() or self.weight_data.text().isEmpty() or
          self.reception_date_data.text().isEmpty() or self.amount_data.text().isEmpty() or 

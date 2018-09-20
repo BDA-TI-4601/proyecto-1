@@ -20,6 +20,9 @@ except AttributeError:
         return QtGui.QApplication.translate(context, text, disambig)
 
 
+###########################   Window Register Class  ###################################
+
+
 class Ui_RegisterClient(QtGui.QWidget):
 
     def setupUi(self, RegisterClient):
@@ -56,10 +59,14 @@ class Ui_RegisterClient(QtGui.QWidget):
         self.type_data.setGeometry(QtCore.QRect(110, 180, 113, 33))
         self.type_data.setObjectName(_fromUtf8("type_data"))
         fill_boxes(self.type_data, type_client_data)
-                
+               
         self.prov_data = QtGui.QLineEdit(RegisterClient)
         self.prov_data.setGeometry(QtCore.QRect(110, 210, 113, 33))
         self.prov_data.setObjectName(_fromUtf8("prov_data"))
+        self.password_data = QtGui.QLineEdit(RegisterClient)
+        self.password_data.setGeometry(QtCore.QRect(110, 240, 113, 33))
+        self.password_data.setObjectName(_fromUtf8("password_data"))
+        self.password_data.setEchoMode(QtGui.QLineEdit.Password)
         self.label_name = QtGui.QLabel(RegisterClient)
         self.label_name.setGeometry(QtCore.QRect(30, 40, 60, 19))
         self.label_name.setObjectName(_fromUtf8("label_name"))
@@ -81,6 +88,9 @@ class Ui_RegisterClient(QtGui.QWidget):
         self.label_prov = QtGui.QLabel(RegisterClient)
         self.label_prov.setGeometry(QtCore.QRect(30, 220, 61, 20))
         self.label_prov.setObjectName(_fromUtf8("label_prov"))
+        self.label_pass = QtGui.QLabel(RegisterClient)
+        self.label_pass.setGeometry(QtCore.QRect(30, 250, 61, 20))
+        self.label_pass.setObjectName(_fromUtf8("label_pass"))
         self.label_img = QtGui.QLabel(RegisterClient)
         self.label_img.setGeometry(QtCore.QRect(270, 50, 101, 111))
         self.label_img.setText(_fromUtf8(""))
@@ -100,8 +110,10 @@ class Ui_RegisterClient(QtGui.QWidget):
         self.label_tel.setText(_translate("RegisterClient", "Telephone:", None))
         self.label_type.setText(_translate("RegisterClient", "Client Type:", None))
         self.label_prov.setText(_translate("RegisterClient", "Province:", None))
+        self.label_pass.setText(_translate("RegisterClient", "Password:", None))
         self.register_button.clicked.connect(lambda: self.send_register_request(RegisterClient))
 
+    # Make register json 
     def set_register_json(self):
         register_json["name"] = self.name_data.text()
         register_json["lastname"] = self.lname_data.text()
@@ -110,12 +122,13 @@ class Ui_RegisterClient(QtGui.QWidget):
         register_json["telephone"] = self.tel_data.text()
         register_json["type"] = self.type_data.text()
         register_json["province"] = self.prov_data.text()
+        register_json["password"] = self.password_data.text()
 
-
+    # Send register client to database in order to store new client information
     def send_register_request(self, module):
         if (self.name_data.text().isEmpty() or self.lname_data.text().isEmpty() or self.id_data.text().isEmpty() or
-         self.account_data.text().isEmpty() or self.tel_data.text().isEmpty() or self.type_data.text().isEmpty() or 
-         self.prov_data.text().isEmpty()):
+             self.account_data.text().isEmpty() or self.tel_data.text().isEmpty() or self.prov_data.text().isEmpty() or 
+             self.password_data.text().isEmpty()):
             show_message("Please insert the required information", "Warning", False)
         else:
             #Send register request to server API

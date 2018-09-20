@@ -9,6 +9,8 @@ from register_module import *
 from client_module import *
 from employee_module1 import *
 from employee_module2 import *
+from manager_module import *
+from admin_module import *
 from filler import *
 
 try:
@@ -102,7 +104,7 @@ class Ui_Login(QtGui.QWidget):
             #if (login_response["type"] = "client"):
             #    self.open_module(module)
             #elif (login_response["type"] = "employee"):
-            self.open_client_module(module)
+            self.open_module(module, Ui_ManagerModule(), "manager")
             #else:
             #    self.open_module(module)
             # Parsing received json data
@@ -116,28 +118,28 @@ class Ui_Login(QtGui.QWidget):
         self.ui.setupUi(self.window)
         self.window.show()
 
-    def open_client_module(self, module):
+    def open_module(self, login, module, type):
         self.window = QtGui.QMainWindow()
-        self.ui = Ui_ClientModule() ######
+        self.ui = module
         self.ui.setupUi(self.window)
-        self.ui.set_client_data(self.user_data.text(), "Admin Info") # Pedir nombre, id cliente y datos de los paquetes 
-        self.ui.set_tmp_login(module)
+        if (type == "client"):
+            self.ui.set_client_data(self.user_data.text(), "ID Client") # Pedir datos
+        elif (type == "employee"):
+            self.ui.set_employee_data(self.user_data.text(), "ID Employee")
+        elif (type == "manager"):
+            self.ui.set_manager_data(self.user_data.text(), "ID Manager")
+        else:
+            self.ui.set_admin_data(self.user_data.text(), "ID Admin")
+
+        self.ui.set_tmp_login(login)
         self.window.show()
         self.hide()
-
-    def open_employee_module(self, module):
-        self.window = QtGui.QMainWindow()
-        self.ui = Ui_EmployeeModule1()
-        self.ui.setupUi(self.window)
-        self.ui.set_employee_data(self.user_data.text(), "ID Employee")
-        self.ui.set_tmp_login(module)
-        self.window.show()
-        self.hide()
-
 
         
 ###########################   Window Login Init  #####################################
 
+
+ #   Init frontend application
 def main():
     app = QtGui.QApplication(sys.argv)
     login_window = Ui_Login()
