@@ -97,14 +97,14 @@ class Ui_Login(QtGui.QWidget):
             show_message("Please insert the required information", "Warning", False)
         else:
             #Send login request to server API
-            login_json["username"] = self.user_data.text()
-            login_json["password"] = self.password_data.text()
+          #  login_json["username"] = self.user_data.text()
+          #  login_json["password"] = self.password_data.text()
         #   login_response = send_request(login_request, login_json, 0) ####
         #   print login_response
             #if (login_response["type"] = "client"):
             #    self.open_module(module)
             #elif (login_response["type"] = "employee"):
-            self.open_module(module, Ui_ManagerModule(), "manager")
+            self.open_module(module, Ui_AdminModule(), "admin")
             #else:
             #    self.open_module(module)
             # Parsing received json data

@@ -57,9 +57,6 @@ class Ui_EmployeeModule2(QtGui.QWidget):
         self.label_8 = QtGui.QLabel(EmployeeModule2)
         self.label_8.setGeometry(QtCore.QRect(20, 200, 60, 19))
         self.label_8.setObjectName(_fromUtf8("label_8"))
-        self.label_9 = QtGui.QLabel(EmployeeModule2)
-        self.label_9.setGeometry(QtCore.QRect(280, 250, 60, 19))
-        self.label_9.setObjectName(_fromUtf8("label_9"))
         self.label_10 = QtGui.QLabel(EmployeeModule2)
         self.label_10.setGeometry(QtCore.QRect(20, 250, 60, 19))
         self.label_10.setObjectName(_fromUtf8("label_10"))
@@ -80,12 +77,9 @@ class Ui_EmployeeModule2(QtGui.QWidget):
         self.weight_data = QtGui.QLineEdit(EmployeeModule2)
         self.weight_data.setGeometry(QtCore.QRect(370, 140, 101, 33))
         self.weight_data.setObjectName(_fromUtf8("weight_data"))
-        self.reception_date_data = QtGui.QLineEdit(EmployeeModule2)
+        self.reception_date_data = QtGui.QDateEdit(EmployeeModule2)
         self.reception_date_data.setGeometry(QtCore.QRect(142, 140, 91, 33))
-        self.reception_date_data.setObjectName(_fromUtf8("reception_date_data"))
-        self.amount_data = QtGui.QLineEdit(EmployeeModule2)
-        self.amount_data.setGeometry(QtCore.QRect(370, 240, 101, 33))
-        self.amount_data.setObjectName(_fromUtf8("amount_data"))
+        self.reception_date_data.setObjectName(_fromUtf8("reception_date_data"))        
         self.value_data = QtGui.QLineEdit(EmployeeModule2)
         self.value_data.setGeometry(QtCore.QRect(370, 190, 101, 33))
         self.value_data.setObjectName(_fromUtf8("value_data"))
@@ -110,13 +104,12 @@ class Ui_EmployeeModule2(QtGui.QWidget):
     def retranslateUi(self, EmployeeModule2):
         EmployeeModule2.setWindowTitle(_translate("EmployeeModule2", "CourierTEC - Employee Session", None))
         self.label_2.setText(_translate("EmployeeModule2", "Create New Package", None))
-        self.label_3.setText(_translate("EmployeeModule2", "Belongs To:", None))
+        self.label_3.setText(_translate("EmployeeModule2", "ID Client:", None))
         self.label_4.setText(_translate("EmployeeModule2", "Description:", None))
         self.label_5.setText(_translate("EmployeeModule2", "Weight:", None))
         self.label_date.setText(_translate("EmployeeModule2", "Reception Date:", None))
         self.label_7.setText(_translate("EmployeeModule2", "Value:", None))
         self.label_8.setText(_translate("EmployeeModule2", "Category:", None))
-        self.label_9.setText(_translate("EmployeeModule2", "Amount:", None))
         self.label_10.setText(_translate("EmployeeModule2", "Type:", None))
         self.register_new_package_button.setText(_translate("EmployeeModule2", "Register New Package", None))
         self.register_new_package_button.clicked.connect(lambda: self.send_package_request(EmployeeModule2) )
@@ -136,8 +129,8 @@ class Ui_EmployeeModule2(QtGui.QWidget):
     #Send the information to the database in order to save the new package info
     def send_package_request(self, module):
         if (self.owner_data.text().isEmpty() or self.weight_data.text().isEmpty() or
-         self.reception_date_data.text().isEmpty() or self.amount_data.text().isEmpty() or 
-         self.value_data.text().isEmpty() or self.description_data.text().isEmpty()):
+         self.reception_date_data.text().isEmpty() or self.value_data.text().isEmpty() or 
+         self.description_data.text().isEmpty()):
             show_message("Please insert the required information", "Warning", False)
         else:
             #Send package request to server API
