@@ -1,11 +1,11 @@
 Bases de Datos Avanzados TI-4601
 Semestre II - 2018
 
-Fabián Astorga Cerdas 2014040808
-Sebastián Víquez Rojas ***
-Ernesto Ulate Ramírez 2014092260
+Fabián Astorga Cerdas - 2014040808
+Ernesto Ulate Ramírez - 2014092260
+Sebastián Víquez Rojas - 201144910
 
 Proyecto programado 1
-Fecha de entrega: 17
+Fecha de entrega: 23 de setiembre de 2018
 
-Estatus de la entrega: ***
+Estatus de la entrega: EXCELENTE

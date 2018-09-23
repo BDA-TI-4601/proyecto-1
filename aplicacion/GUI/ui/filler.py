@@ -49,12 +49,12 @@ average_bydate = ["12.46%","30.00%","15.75%","90.12%"]
 
 
 #Fill combo boxes with data
-def fill_boxes(pbox, pdata):
+def fill_boxes( pbox, pdata ):
     for i in range(len(pdata)):
         pbox.addItem(pdata[i])
 
 # Fill table with the corresponding data
-def fill_table(ptable, ptuples, pcols):
+def fill_table( ptable, ptuples, pcols ):
     ptable.clearContents()
     _row = 0
     for i in ptuples:
@@ -64,13 +64,21 @@ def fill_table(ptable, ptuples, pcols):
         _row += 1
 
 #Delete some row in table
-def delete_row(data, prow):
+def delete_row( data, prow ):
     del data[prow]
 
 #Add column into the table
-def add_column_table(pcolumn, ptable, pamount):
+def add_column_table( pcolumn, ptable, pamount ):
     for i in range(len(ptable)):
         for j in range (pamount):
             if (j == (pamount-1)):
                 ptable[i][j] = pcolumn[i]
             
+
+def serialize_date( pdate ):
+    try:
+        line = pdate.readline()
+        data = line.split("/")
+        print data
+    except:
+        print ("Sorry, couldn't load file...")

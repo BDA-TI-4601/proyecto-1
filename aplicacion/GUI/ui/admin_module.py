@@ -231,16 +231,16 @@ class Ui_AdminModule(object):
 
     def amount_packages_bydate(self):
         #Create json
-        amount_packages_admin_json["startdate"] = self.dateEdit.text()
-        amount_packages_admin_json["finaldate"] = self.dateEdit_2.text()
-        #Send request
+        amount_packages_admin_json["startdate"] = serialize_date( self.dateEdit.text() )
+        amount_packages_admin_json["finaldate"] = serialize_date( self.dateEdit_2.text() )
+      #Send request
       #  response = send_request(amount_packages_admin_request, amount_packages_admin_json, True)
       #fill table
         fill_table(self.tableWidget, amount_packages_bydate, AVERAGE_COLS)
 
     def mensual_amount(self):
-        mensual_amount_admin_json["month"] = str(self.months.currentText())
-        mensual_amount_admin_json["type"] = str(self.type_package.currentText())
+        mensual_amount_admin_json["month"] = str(self.months.currentText() ) 
+        mensual_amount_admin_json["type"] = str(self.type_package.currentText() )
       #  response = send_request(mensual_amount_admin_request, mensual_amount_admin_json, True)
       # fill table 
         fill_table(self.tableWidget_2, mensual_amount, MENSUAL_COLS)  
