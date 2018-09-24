@@ -13,6 +13,7 @@ def get_province_by_id( p_id ):
                                     content[0][1])
     return province
 
+
 def get_client_type_by_id( ct_id ):
     client_type = 0
     query_client_type = "SELECT * FROM CLIENT_TYPE WHERE ct_id='"+str(ct_id)+"'"

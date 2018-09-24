@@ -1,9 +1,8 @@
 
-import pyodbc
 from users_model import *
 from info_model import *
 
-def user_login( p_username, p_password ):
+def user_login( p_username, p_password):
     user_client = get_client_by_username( p_username )
     user_worker = get_worker_by_username( p_username )
     if( user_client != 0 and user_client['password'] == p_password ):

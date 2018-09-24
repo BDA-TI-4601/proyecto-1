@@ -147,3 +147,46 @@ def parse_worker(   w_id,
     }
     return worker
         
+def parse_package_client(   p_id,
+                            p_reception_date,
+                            pt_name,
+                            ca_name,
+                            p_weight,
+                            pb_delivery_date,
+                            pb_total ):
+    package_client = {
+        'id' : p_id,
+        'reception_date' : p_reception_date,
+        'type' : pt_name,
+        'category' : ca_name,
+        'weight' : p_weight,
+        'delivery_date' : pb_delivery_date,
+        'total' : pb_total
+    }
+    return package_client
+
+def parse_packages_branch(   pb_id_package,
+                            pb_id_client,
+                            c_name,
+                            c_lname,
+                            p_reception_date,
+                            pb_delivery_date,
+                            p_weight,
+                            p_value,
+                            pb_total,
+                            pt_name,
+                            ca_name ):
+    package_branch = {
+        'id_package' : pb_id_package,
+        'id_client' : pb_id_client,
+        'client_name' : c_name,
+        'client_lname' : c_lname,
+        'reception_date' : p_reception_date,
+        'delivery_date' : pb_delivery_date,
+        'weight' : p_weight,
+        'value' : p_value,
+        'total' : pb_total,
+        'type' : pt_name,
+        'category' : ca_name
+    }
+    return package_branch

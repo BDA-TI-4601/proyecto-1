@@ -8,7 +8,6 @@ def get_client_by_username( p_username ):
     query_client = "SELECT * FROM CLIENT WHERE c_username='"+p_username+"'"
     database_info_client = new_query( query_client )
     content_client = database_info_client.fetchall()
-    print content_client
     if( len_database_info( content_client ) == 1 ):
         client = parse_client(  content_client[0][0],
                                 content_client[0][1],
