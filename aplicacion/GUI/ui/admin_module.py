@@ -8,7 +8,7 @@
 
 from PyQt4 import QtCore, QtGui
 from http_service import *
-from filler import *
+from data_manager import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -79,30 +79,8 @@ class Ui_AdminModule(object):
         self.tableWidget.setAlternatingRowColors(True)
         self.tableWidget.verticalHeader().setDefaultSectionSize(20)
         self.tableWidget.setHorizontalHeaderLabels(amount_packages_columns)            
-        for i, width in enumerate((50, 90, 115, 150), start=0):
+        for i, width in enumerate((50, 90, 115, 150, 165), start=0):
             self.tableWidget.setColumnWidth(i, width)
-
-        self.tableWidget_2 = QtGui.QTableWidget(AdminModule)
-        self.tableWidget_2.setGeometry(QtCore.QRect(550, 70, 201, 211))
-        self.tableWidget_2.setObjectName(_fromUtf8("tableWidget_2"))
-        self.tableWidget_2.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.tableWidget_2.setDragDropOverwriteMode(False)
-        self.tableWidget_2.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.tableWidget_2.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.tableWidget_2.setWordWrap(False)
-        self.tableWidget_2.setSortingEnabled(False)
-        self.tableWidget_2.setColumnCount(MENSUAL_COLS)
-        self.tableWidget_2.setRowCount(0)
-        self.tableWidget_2.horizontalHeader().setDefaultAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter|
-                                                          QtCore.Qt.AlignCenter)
-        self.tableWidget_2.horizontalHeader().setHighlightSections(False)
-        self.tableWidget_2.horizontalHeader().setStretchLastSection(True)
-        self.tableWidget_2.verticalHeader().setVisible(False)
-        self.tableWidget_2.setAlternatingRowColors(True)
-        self.tableWidget_2.verticalHeader().setDefaultSectionSize(20)
-        self.tableWidget_2.setHorizontalHeaderLabels(mensual_amount_columns)            
-        for i, width in enumerate((50, 100), start=0):
-            self.tableWidget_2.setColumnWidth(i, width)
         
         self.dateEdit = QtGui.QDateEdit(AdminModule)
         self.dateEdit.setGeometry(QtCore.QRect(120, 370, 110, 33))
@@ -133,7 +111,7 @@ class Ui_AdminModule(object):
         self.pushButton_4.setFont(font)
         self.pushButton_4.setObjectName(_fromUtf8("pushButton_4"))
         self.label_5 = QtGui.QLabel(AdminModule)
-        self.label_5.setGeometry(QtCore.QRect(800, 128, 121, 21))
+        self.label_5.setGeometry(QtCore.QRect(800, 128, 190, 50))
         font = QtGui.QFont()
         font.setFamily(_fromUtf8("Ubuntu"))
         font.setPointSize(14)
@@ -145,14 +123,14 @@ class Ui_AdminModule(object):
         self.label_8.setPixmap(QtGui.QPixmap(_fromUtf8("images/administrator.png")))
         self.label_8.setObjectName(_fromUtf8("label_8"))
         self.label_6 = QtGui.QLabel(AdminModule)
-        self.label_6.setGeometry(QtCore.QRect(800, 160, 121, 31))
+        self.label_6.setGeometry(QtCore.QRect(800, 160, 190, 50))
         font = QtGui.QFont()
         font.setFamily(_fromUtf8("Ubuntu"))
         font.setPointSize(14)
         self.label_6.setFont(font)
         self.label_6.setObjectName(_fromUtf8("label_6"))
         self.label_7 = QtGui.QLabel(AdminModule)
-        self.label_7.setGeometry(QtCore.QRect(800, 200, 111, 31))
+        self.label_7.setGeometry(QtCore.QRect(800, 200, 190, 50))
         font = QtGui.QFont()
         font.setFamily(_fromUtf8("Ubuntu"))
         font.setPointSize(14)
@@ -199,6 +177,12 @@ class Ui_AdminModule(object):
         fill_boxes(self.months, months)
         fill_boxes(self.type_package, type_package_data)
 
+        self.amount_mensual = QtGui.QLineEdit(AdminModule)
+        self.amount_mensual.setGeometry(QtCore.QRect(550, 70, 191, 41))
+        self.amount_mensual.setObjectName(_fromUtf8("amount_mensual"))
+        self.amount_mensual.setReadOnly(True)
+
+
     def retranslateUi(self, AdminModule):
         AdminModule.setWindowTitle(_translate("AdminModule", "CourierTEC - Admin Session", None))
         self.label.setText(_translate("AdminModule", "Raised Money", None))
@@ -223,36 +207,54 @@ class Ui_AdminModule(object):
         self.pushButton_5.clicked.connect(self.refresh_raised_money) #refresh
 
     def add_averages(self):
+        average_json = {"operation":4 ,"date_min":"", "date_max":""}
+        average_json["date_min"] = serialize_date( self.dateEdit.text(), "/", "-" )
+        average_json["date_max"] = serialize_date( self.dateEdit_2.text(), "/", "-" )
         #Http request
-       # response = send_request(averages_admin_request, {"average":"ok"}, True)
-       # Save average in array
-        add_column_table(average_bydate, amount_packages_bydate, AVERAGE_COLS)
-        fill_table(self.tableWidget, amount_packages_bydate, AVERAGE_COLS)
+        response = send_request(admin_request, average_json, True)
+        if (response["status"] == int(OK)):
+            average_bydate = []
+            data = ast.literal_eval(response["data"]) 
+            for i in range (len(data)):
+                average_bydate.append( data[i]["average"] )
+            print average_bydate 
+            add_column_table(average_bydate, amount_packages_bydate, AVERAGE_COLS)
+            fill_table(self.tableWidget, amount_packages_bydate, AVERAGE_COLS)
 
     def amount_packages_bydate(self):
         #Create json
-        amount_packages_admin_json["startdate"] = serialize_date( self.dateEdit.text() )
-        amount_packages_admin_json["finaldate"] = serialize_date( self.dateEdit_2.text() )
-      #Send request
-      #  response = send_request(amount_packages_admin_request, amount_packages_admin_json, True)
-      #fill table
-        fill_table(self.tableWidget, amount_packages_bydate, AVERAGE_COLS)
+        amount_json = {"operation":3,"date_min":"","date_max":""}
+        amount_json["date_min"] = serialize_date( self.dateEdit.text(), "/", "-" )
+        amount_json["date_max"] = serialize_date( self.dateEdit_2.text(), "/", "-" )
+        response = send_request(admin_request, amount_json, True)
+        if (response["status"] == int(OK)):
+            self.amount_mensual.setText( unicode(response["data"]) )
+            "ID Package","ID Client","Last Name","Amount", "Reception Date", "Average"
+            serialize_table(response["data"], ["id_package_branch","id_client","lname","name","reception_date","reception_date"], AVERAGE_COLS, amount_packages_bydate)
+            fill_table(self.tableWidget, amount_packages_bydate, AVERAGE_COLS)
+
 
     def mensual_amount(self):
-        mensual_amount_admin_json["month"] = str(self.months.currentText() ) 
-        mensual_amount_admin_json["type"] = str(self.type_package.currentText() )
-      #  response = send_request(mensual_amount_admin_request, mensual_amount_admin_json, True)
-      # fill table 
-        fill_table(self.tableWidget_2, mensual_amount, MENSUAL_COLS)  
-
+        mensual_json = {"operation":1,"type":"","date_min":"","date_max":"", "branch":""}
+        mensual_json["type"] = unicode(self.type_package.currentText())  
+        mensual_json["date_min"] = serialize_date( self.dateEdit.text(), "/", "-" )
+        mensual_json["date_max"] = serialize_date( self.dateEdit_2.text(), "/", "-" )
+        response = send_request(admin_request, mensual_json, True)
+        if (response["status"] == int(OK)):
+            self.amount_mensual.setText( unicode(response["data"]) )
+      
     def refresh_raised_money(self):
         #http request
-        self.lineEdit.setText("300000")
+        raised_json = {"operation":2, "branch":""}
+        raised_json["branch"] = unicode("Heredia")
+        response = send_request(admin_request, raised_json, True)
+        if (response["status"] == int(OK)):
+            self.lineEdit.setText( unicode(response["data"]) )
 
-    def set_admin_data(self, pname, pid):
-        self.label_5.setText(pname)
-        self.label_6.setText(pid)
-        self.label_7.setText("Algun otro dato")
+    def set_admin_data(self, pname, plname, ptype):
+        self.label_5.setText("Name: " + pname)
+        self.label_6.setText(plname)
+        self.label_7.setText(ptype)
 
     def set_tmp_login(self, module):
         self.login_tmp = module
@@ -260,3 +262,7 @@ class Ui_AdminModule(object):
     def logout_action(self, module):
         module.hide()
         self.login_tmp.show()
+
+    def set_types(self, ptypes):
+        print ptypes
+        fill_boxes(self.type_package, ptypes)

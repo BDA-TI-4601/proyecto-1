@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-
 from PyQt4 import QtCore, QtGui
+import ast
 import sys, os
 from http_service import *
 from messages import *
@@ -11,7 +10,7 @@ from employee_module1 import *
 from employee_module2 import *
 from manager_module import *
 from admin_module import *
-from filler import *
+from data_manager import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -65,8 +64,11 @@ class Ui_Login(QtGui.QWidget):
         self.label_password = QtGui.QLabel(Login)
         self.label_password.setGeometry(QtCore.QRect(260, 80, 71, 31))
         self.label_password.setObjectName(_fromUtf8("label_password"))
+        self.label_ubication = QtGui.QLabel(Login)
+        self.label_ubication.setGeometry(QtCore.QRect(20, 10, 71, 31))
+        self.label_ubication.setObjectName(_fromUtf8("label_ubication"))
         self.label_logo = QtGui.QLabel(Login)
-        self.label_logo.setGeometry(QtCore.QRect(20, 40, 211, 141))
+        self.label_logo.setGeometry(QtCore.QRect(40, 60, 211, 141))
         self.label_logo.setText(_fromUtf8(""))
         self.label_logo.setPixmap(QtGui.QPixmap(_fromUtf8("images/logo.png")))
         self.label_logo.setObjectName(_fromUtf8("label_logo"))
@@ -74,9 +76,26 @@ class Ui_Login(QtGui.QWidget):
         QtCore.QMetaObject.connectSlotsByName(Login)
         self.setWindowIcon(QtGui.QIcon('images/logo.png'))
         self.province = QtGui.QComboBox(Login)
-        self.province.setGeometry(QtCore.QRect(200, 180, 113, 33))
+        self.province.setGeometry(QtCore.QRect(100, 10, 113, 33))
         self.province.setObjectName(_fromUtf8("province"))
-        fill_boxes(self.province, provinces)
+        self.types = None
+
+        #Ask for branches 
+        branches = send_request(ask_branches, None, False)
+        if (branches["status"] == int(OK)):
+            for i in range (len(branches["data"])):
+                provinces.append( branches["data"][i]["ubication"] )
+            fill_boxes(self.province, provinces)
+        else: 
+            show_message("Server out of service", "Error", False)
+
+        types = send_request(ask_types, None, False)  
+        if (types["status"] == int(OK)):
+            self.types = types["data"]
+            self.types = ast.literal_eval(self.types)   
+        else: 
+            show_message("Server out of service", "Error", False)
+
 
     def retranslateUi(self, Login):
         Login.setWindowTitle(_translate("Login", "CourierTEC Platform System", None))
@@ -85,6 +104,7 @@ class Ui_Login(QtGui.QWidget):
         self.quit_button.setText(_translate("Login", "Quit", None))
         self.label_username.setText(_translate("Login", "Username:", None))
         self.label_password.setText(_translate("Login", "Password:", None))
+        self.label_ubication.setText(_translate("Login", "Ubication:", None))
         self.login_button.clicked.connect(lambda: self.send_login_request(Login))
         self.register_button.clicked.connect(self.open_register_module)
         self.quit_button.clicked.connect(Login.close)
@@ -97,18 +117,30 @@ class Ui_Login(QtGui.QWidget):
             show_message("Please insert the required information", "Warning", False)
         else:
             #Send login request to server API
-          #  login_json["username"] = self.user_data.text()
-          #  login_json["password"] = self.password_data.text()
-        #   login_response = send_request(login_request, login_json, 0) ####
-        #   print login_response
-            #if (login_response["type"] = "client"):
-            #    self.open_module(module)
-            #elif (login_response["type"] = "employee"):
-            self.open_module(module, Ui_AdminModule(), "admin")
-            #else:
-            #    self.open_module(module)
-            # Parsing received json data
-            #Open user's session (admin, employee, client)
+            login_json["username"] = str(self.user_data.text())
+            login_json["password"] = str(self.password_data.text())
+            login_json["id_branch"] = self.get_id_branch(self.province.currentText()) 
+            login_response = send_request(login_request, login_json, True) 
+            if (login_response["status"] == ERROR):
+                show_message("User doesn't exist, try again...", "Alert", False)
+            elif (login_response["status"] == CLIENT): #client
+               #Open client session
+               self.open_module(module, Ui_ClientModule(), "client", login_response) 
+            elif (login_response["status"] == WORKER): #worker
+                if (login_response["data"]["type"] == "Gerente"):
+                    self.open_module(module, Ui_ManagerModule(), "manager", login_response)
+                elif (login_response["data"]["type"] == "Administrador"):
+                    self.open_module(module, Ui_AdminModule(), "admin", login_response)
+                elif (login_response["data"]["type"] == "Empleado"):
+                    self.open_module(module, Ui_EmployeeModule1(), "employee", login_response)
+
+    def get_id_branch(self, pname):
+        if (pname == "Heredia"):
+            return 1
+        elif (pname == "Cartago"):
+            return 3
+        else: 
+            return 2
     
     # Open register window module if the user 
     # wants to be part of the platform
@@ -118,18 +150,27 @@ class Ui_Login(QtGui.QWidget):
         self.ui.setupUi(self.window)
         self.window.show()
 
-    def open_module(self, login, module, type):
+    def open_module(self, login, module, type, pdata):
         self.window = QtGui.QMainWindow()
         self.ui = module
         self.ui.setupUi(self.window)
         if (type == "client"):
-            self.ui.set_client_data(self.user_data.text(), "ID Client") # Pedir datos
+            self.ui.set_client_data(pdata["data"]["name"] + " " + pdata["data"]["lname"] , pdata["branch"]["type"],
+                                     pdata["branch"]["ubication"], pdata["branch"]["telephone"], pdata["branch"]["email"] ) 
+            self.ui.fill_client_table( pdata["packages"])
+
         elif (type == "employee"):
-            self.ui.set_employee_data(self.user_data.text(), "ID Employee")
+            self.ui.set_employee_data(pdata["data"]["name"], pdata["data"]["lname"], pdata["data"]["id"])
+            self.ui.fill_employee_table( pdata["packages"] )
+            self.ui.set_types(self.types)
+
         elif (type == "manager"):
-            self.ui.set_manager_data(self.user_data.text(), "ID Manager")
-        else:
-            self.ui.set_admin_data(self.user_data.text(), "ID Admin")
+            self.ui.set_manager_data(pdata["data"]["name"], pdata["data"]["lname"], pdata["data"]["type"])
+
+        elif (type == "admin"):
+            self.ui.set_admin_data(pdata["data"]["name"], pdata["data"]["lname"], pdata["data"]["type"])
+            self.ui.set_types(self.types)
+
 
         self.ui.set_tmp_login(login)
         self.window.show()

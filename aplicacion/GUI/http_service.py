@@ -1,35 +1,32 @@
 import requests
 
 # Peticiones al servidor API 
-IP = ""
+IP = "192.168.1.100"
 PORT = "8080"
 HTTP = "http://"
 OK = "200"
 
 ##########################    LINKS  ######################################################
 #LOGIN
-ask_branches = HTTP + IP + PORT + "/branches" #ask for branches 
-login_request = HTTP + IP + PORT + "/login" # login request
+ask_branches = HTTP + IP + ":" + PORT + "/ask_branches" #ask for branches 
+ask_types = HTTP + IP + ":" + PORT + "/ask_types" #Ask for packages types
+login_request = HTTP + IP + ":" + PORT + "/login" # login request
 
 #REGISTER
-register_request = HTTP + IP + PORT + "/register" #register client request
+register_request = HTTP + IP +":" + PORT + "/register" #register client request
 
 #CLIENT
 # --------------------------------- #
 
 #EMPLOYEE
-new_package_request = HTTP + IP + PORT + "/new_package" #new package request
-delete_package_request = HTTP + IP + PORT + "/del_package" #delete package request
+new_package_request = HTTP + IP +":" + PORT + "/new_package" #new package request
+delete_package_request = HTTP + IP +":" + PORT + "/package" #delete package request
 
 #MANAGER
-amount_branch_request = HTTP + IP + PORT + "/branch_amount" #consult amount branch manager
-top3_request = HTTP + IP + PORT + "/top3" #consult top 3 clients 
+manager_request = HTTP + IP + ":" + PORT + "/manager" #consult amount branch manager and top 3 clients
 
 #ADMINISTRATOR
-raised_money_admin_request = HTTP + IP + PORT + "/raised_money" # consult raised money 
-mensual_amount_admin_request = HTTP + IP + PORT + "/mensual_amount" #mensual amount admin
-amount_packages_admin_request =  HTTP + IP + PORT + "/amount_packages" #amount packages in range date
-averages_admin_request = HTTP + IP + PORT + "/averages" #averages packages request
+admin_request = HTTP + IP +":" + PORT +  "/admin"  #consultas
 
 
 ##########################    JSON PROTOCOL   ##############################################
@@ -38,23 +35,23 @@ averages_admin_request = HTTP + IP + PORT + "/averages" #averages packages reque
 login_json = {"username":"", "password":"", "id_branch":""}
 
 #Register Module
-register_json = {"name":"", "lastname":"", "id":"","account":"",
+register_json = {"name":"", "lname":"", "id":"","username":"",
                 "telephone":"","type":"","province":"", "password":""}
 
 #Client Module 
 #    ------------------------------------------   #
 
 #Employee Module 
-delete_package_json = {"id_package":""}
-new_package_json = {"id_client":"", "reception_date":"","category":"","type":"","description":"",
-                    "weight":"", "value":""}
+delete_package_json = {"id_package":""} ####################
+new_package_json = {"id":"", "reception_date":"","category":"","type":"","description":"",
+                    "weight":"", "value":"", "branch":2}
 
 #Manager Module
-amount_branch_json = {"branch":"","startdate":"","finaldate":"", "type":""}
+raised_money_json = {"operation":"","branch":"","date_min":"", "date_max":""}
 
 #Admin Module
-mensual_amount_admin_json = {"month":"","type":""}
-amount_packages_admin_json = {"startdate":"","finaldate":""}
+admin_json = {"operation":"","branch":"", "date_min":"", "date_max":"", "type":""}
+
 
 
 ##########################    REQUEST FUNCTION   ##############################################

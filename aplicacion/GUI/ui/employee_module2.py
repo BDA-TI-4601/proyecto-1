@@ -3,7 +3,7 @@
 from PyQt4 import QtCore, QtGui
 from http_service import *
 from messages import *
-from filler import *
+from data_manager import *
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -90,7 +90,7 @@ class Ui_EmployeeModule2(QtGui.QWidget):
         self.type_data = QtGui.QComboBox(EmployeeModule2)
         self.type_data.setGeometry(QtCore.QRect(140, 240, 91, 33))
         self.type_data.setObjectName(_fromUtf8("type_data"))
-        fill_boxes(self.type_data, type_package_data)
+        self.type_pack = None
 
         self.category_data = QtGui.QComboBox(EmployeeModule2)
         self.category_data.setGeometry(QtCore.QRect(140, 190, 91, 33))
@@ -116,14 +116,17 @@ class Ui_EmployeeModule2(QtGui.QWidget):
 
     # Make json with the specific info about new package 
     def set_package_json(self):
-        pass
-   #     package_json["name"] = self.name_data.text()
-   #     package_json["lastname"] = self.lname_data.text()
-   #     package_json["id"] = self.id_data.text()
-   #     package_json["account"] = self.account_data.text()
-   #     package_json["telephone"] = self.tel_data.text()
-   #     package_json["type"] = self.type_data.text()
-   #     package_json["province"] = self.prov_data.text()
+        new_package_json["id"] = unicode(self.owner_data.text())
+        new_package_json["reception_date"] = str(self.reception_date_data.text())
+        new_package_json["category"] = str(self.category_data.currentText())
+        new_package_json["type"] = unicode(self.type_data.currentText())
+        new_package_json["description"] = unicode(self.description_data.text())
+        new_package_json["weight"] = int(self.weight_data.text())
+        new_package_json["value"] = int(self.value_data.text())
+
+    def set_types2(self, ptypes):
+        self.type_pack = ptypes
+        fill_boxes(self.type_data, self.type_pack)
 
     
     #Send the information to the database in order to save the new package info
@@ -134,11 +137,10 @@ class Ui_EmployeeModule2(QtGui.QWidget):
             show_message("Please insert the required information", "Warning", False)
         else:
             #Send package request to server API
-           # self.set_package_json()
-           # register_response = send_request(package_request, package_json, 1) ####
-           # if (register_response["status"] == OK):
-           #     
-            # else:
-            #    show_message("Can't register user, try again.", "Failed", False)
-            show_message("Package has been registered successfully!", "Done", True)
-            module.hide()
+            self.set_package_json()
+            register_response = send_request(new_package_request, new_package_json, True) 
+            if (register_response["status"] == int(OK)):
+                show_message("Package has been registered successfully!", "Done", True)
+                module.hide()    
+            else:
+                show_message("Can't register user, try again.", "Failed", False)

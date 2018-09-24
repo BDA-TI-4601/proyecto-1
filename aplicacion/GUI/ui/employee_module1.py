@@ -2,7 +2,7 @@
 
 from PyQt4 import QtCore, QtGui
 from employee_module2 import *
-from filler import *
+from data_manager import *
 
 
 try:
@@ -45,7 +45,7 @@ class Ui_EmployeeModule1(QtGui.QWidget):
         self.all_packages_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.all_packages_table.setWordWrap(False)
         self.all_packages_table.setSortingEnabled(False)
-        self.all_packages_table.setColumnCount(PACKAGE_COLS)
+        self.all_packages_table.setColumnCount(PACKAGE_EMP_COLS)
         self.all_packages_table.setRowCount(0)
         self.all_packages_table.horizontalHeader().setDefaultAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter|
                                                           QtCore.Qt.AlignCenter)
@@ -54,21 +54,19 @@ class Ui_EmployeeModule1(QtGui.QWidget):
         self.all_packages_table.verticalHeader().setVisible(False)
         self.all_packages_table.setAlternatingRowColors(True)
         self.all_packages_table.verticalHeader().setDefaultSectionSize(20)
-        self.all_packages_table.setHorizontalHeaderLabels(package_columns)            
-        for i, width in enumerate((80, 120, 120, 110, 150), start=0):
+        self.all_packages_table.setHorizontalHeaderLabels(packages_emp)            
+        for i, width in enumerate((90, 120, 160, 200, 210, 220, 230), start=0):
             self.all_packages_table.setColumnWidth(i, width)
 
-        fill_table(self.all_packages_table, packages_data, PACKAGE_COLS)
-
         self.label_name = QtGui.QLabel(EmployeeModule1)
-        self.label_name.setGeometry(QtCore.QRect(750, 120, 60, 26))
+        self.label_name.setGeometry(QtCore.QRect(750, 120, 150, 50))
         font = QtGui.QFont()
         font.setFamily(_fromUtf8("Ubuntu"))
         font.setPointSize(14)
         self.label_name.setFont(font)
         self.label_name.setObjectName(_fromUtf8("label_name"))
         self.label_employee = QtGui.QLabel(EmployeeModule1)
-        self.label_employee.setGeometry(QtCore.QRect(750, 210, 121, 19))
+        self.label_employee.setGeometry(QtCore.QRect(750, 210, 150, 50))
         font = QtGui.QFont()
         font.setFamily(_fromUtf8("Ubuntu"))
         font.setPointSize(14)
@@ -94,7 +92,7 @@ class Ui_EmployeeModule1(QtGui.QWidget):
         self.label_img.setPixmap(QtGui.QPixmap(_fromUtf8("images/employee.png")))
         self.label_img.setObjectName(_fromUtf8("label_img"))
         self.label_id = QtGui.QLabel(EmployeeModule1)
-        self.label_id.setGeometry(QtCore.QRect(750, 160, 60, 19))
+        self.label_id.setGeometry(QtCore.QRect(750, 160, 200, 40))
         font = QtGui.QFont()
         font.setFamily(_fromUtf8("Ubuntu"))
         font.setPointSize(14)
@@ -114,15 +112,16 @@ class Ui_EmployeeModule1(QtGui.QWidget):
         self.retranslateUi(EmployeeModule1)
         QtCore.QMetaObject.connectSlotsByName(EmployeeModule1)
         self.setWindowIcon(QtGui.QIcon('images/logo.png'))
+        self.pack_types = None
 
     def retranslateUi(self, EmployeeModule1):
         EmployeeModule1.setWindowTitle(_translate("EmployeeModule1", "CourierTEC - Employee Session", None))
         self.label.setText(_translate("EmployeeModule1", "All Packages", None))
-        self.label_name.setText(_translate("EmployeeModule1", "Name", None))
-        self.label_employee.setText(_translate("EmployeeModule1", "Employee", None))
+        self.label_name.setText(_translate("EmployeeModule1", "", None))
+        self.label_employee.setText(_translate("EmployeeModule1", "", None))
         self.new_package_button.setText(_translate("EmployeeModule1", "New Package...", None))
         self.logout_button.setText(_translate("EmployeeModule1", "Log Out", None))
-        self.label_id.setText(_translate("EmployeeModule1", "ID", None))
+        self.label_id.setText(_translate("EmployeeModule1", "", None))
         self.new_package_button.clicked.connect(self.open_package_form)
         self.logout_button.clicked.connect(lambda: self.logout_action(EmployeeModule1))
         self.all_packages_table.cellDoubleClicked.connect(self.show_confirm_delete)  
@@ -133,10 +132,28 @@ class Ui_EmployeeModule1(QtGui.QWidget):
         if (ret == QtGui.QMessageBox.Yes):
             #http request para eliminar paquetes
             print("Row %d and Column %d was deleted" % (prow, pcolumn))
-            delete_row(packages_data, prow)
-            fill_table(self.all_packages_table, packages_data, PACKAGE_COLS)
+            print unicode(self.all_packages_table.item(prow, pcolumn).text())
+            del_json = {"package_id":"","delivery_date":""}
+            del_json["package_id"] = unicode(self.all_packages_table.item(prow, pcolumn).text())
+            del_json["delivery_date"] = unicode(self.all_packages_table.item(prow, pcolumn).text())
+            if (del_json["package_id"] == "" or del_json["delivery_date"] == ""):
+                pass
+            else:
+                response = send_request(delete_package_request, del_json, True)
+                if (response["status"] == int(OK)):
+                    delete_row(packages_data, prow)
+                    fill_table(self.all_packages_table, all_packages, PACKAGE_EMP_COLS)
+                else: 
+                    show_message("Coudn't delete package, try again..", "Alert", False)
         else:
             pass
+
+
+
+    def fill_employee_table(self, ppackages):
+        ["ID Pack","ID Client","Last Name","Type","Category","Value","Reception Date","Delivery Date"]
+        serialize_table(ppackages, ["id_package","id_client","client_lname","type","category","value","reception_date", "delivery_date"], PACKAGE_EMP_COLS, all_packages)
+        fill_table(self.all_packages_table, all_packages, PACKAGE_EMP_COLS)
 
      # Helps closing the login window and starts session
     def set_tmp_login(self, plogin):
@@ -147,6 +164,7 @@ class Ui_EmployeeModule1(QtGui.QWidget):
         self.window = QtGui.QMainWindow()
         self.ui = Ui_EmployeeModule2()
         self.ui.setupUi(self.window)
+        self.ui.set_types2(self.pack_types)
         self.window.show()
 
     # Sign Out
@@ -155,6 +173,10 @@ class Ui_EmployeeModule1(QtGui.QWidget):
         self.login_tmp.show()
 
     #Set employee information
-    def set_employee_data(self, pname, pid):
-        self.label_name.setText(pname)
-        self.label_id.setText(pid)
+    def set_employee_data(self, pname, plname, pid):
+        self.label_name.setText("Name: " + pname)
+        self.label_id.setText(plname)
+        self.label_employee.setText("ID: " + pid)
+
+    def set_types(self, ptypes):
+        self.pack_types = ptypes

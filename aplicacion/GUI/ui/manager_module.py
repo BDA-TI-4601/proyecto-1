@@ -2,7 +2,8 @@
 
 from PyQt4 import QtCore, QtGui
 from http_service import *
-from filler import *
+from data_manager import *
+from messages import *
 
 
 try:
@@ -141,7 +142,7 @@ class Ui_ManagerModule(object):
         self.label_info1.setFont(font)
         self.label_info1.setObjectName(_fromUtf8("label_info1"))
         self.label_info2 = QtGui.QLabel(ManagerModule)
-        self.label_info2.setGeometry(QtCore.QRect(760, 160, 141, 31))
+        self.label_info2.setGeometry(QtCore.QRect(760, 160, 190, 31))
         font = QtGui.QFont()
         font.setFamily(_fromUtf8("Ubuntu"))
         font.setPointSize(14)
@@ -154,22 +155,14 @@ class Ui_ManagerModule(object):
         font.setPointSize(14)
         self.label_info3.setFont(font)
         self.label_info3.setObjectName(_fromUtf8("label_info3"))
-        self.label_branch_2 = QtGui.QLabel(ManagerModule)
-        self.label_branch_2.setGeometry(QtCore.QRect(30, 170, 131, 31))
         font = QtGui.QFont()
         font.setFamily(_fromUtf8("Ubuntu"))
         font.setPointSize(14)
-        self.label_branch_2.setFont(font)
-        self.label_branch_2.setObjectName(_fromUtf8("label_branch_2"))
-        self.branch_data_2 = QtGui.QComboBox(ManagerModule)
-        self.branch_data_2.setGeometry(QtCore.QRect(160, 170, 101, 31))
-        self.branch_data_2.setObjectName(_fromUtf8("branch_data_2"))
         self.retranslateUi(ManagerModule)
         QtCore.QMetaObject.connectSlotsByName(ManagerModule)
         self.login_tmp = None
         self.amount_data.setReadOnly(True)
         fill_boxes(self.branch_data, provinces)
-        fill_boxes(self.branch_data_2, type_package_data)
 
     def retranslateUi(self, ManagerModule):
         ManagerModule.setWindowTitle(_translate("ManagerModule", "CourierTEC - Manager Session", None))
@@ -184,39 +177,41 @@ class Ui_ManagerModule(object):
         self.label_info1.setText(_translate("ManagerModule", "Info Manager 1", None))
         self.label_info2.setText(_translate("ManagerModule", "Info Manager 2", None))
         self.label_info3.setText(_translate("ManagerModule", "Info Manager 3", None))
-        self.label_branch_2.setText(_translate("ManagerModule", "Type Package:", None))
         self.logout_button.clicked.connect(lambda: self.logout_action(ManagerModule))
-        self.consult_amount_button.clicked.connect(self.consult_amount)
-        self.consult_top3_button.clicked.connect(self.consult_top3)
+        self.consult_amount_button.clicked.connect(lambda: self.consult_manager(1) )
+        self.consult_top3_button.clicked.connect(lambda: self.consult_manager(2) )
 
     #Consult the amount of some type of package in some branch within an 
     # specific date range
-    def consult_amount(self):
+    def consult_manager(self, poperation):
         # make json with data 
-        branch_amount_manager_json["branch"] = self.branch_data
-        branch_amount_manager_json["startdate"] = self.start_date
-        branch_amount_manager_json["finaldate"] = self.final_date
-        branch_amount_manager_json["type"] = self.branch_data_2
-       # print self.start_date.text()     # imprime 00/00/00
+        manager_json["date_min"] = serialize_date( self.start_date.text(), "/", "-" )
+        manager_json["date_max"] = serialize_date( self.final_date.text(), "/", "-" )
+        manager_json["operation"] = poperation
+        manager_json["branch"] = unicode(self.branch_data.currentText())
+        
         # http request 
-       # response = send_request(amount_branch_request, branch_amount_manager_json, True)
-        self.amount_data.setText("10024582983")
-    
-    # Consult top 3 clients according to the amount by each one 
-    def consult_top3(self):
-        #http request top 3 clients
-        fill_table(self.top3_table, top3_clients, TOP3_COLS)
+        response = send_request(manager_request, manager_json, True)
 
+        if (response["status"] == int(OK) ):
+            if (poperation == 1):
+                self.amount_data.setText( str(response["data"]) )
+            elif (poperation == 2):    # Consult top 3 clients according to the amount by each one 
+                serialize_table(response["data"], ["name","lname","total"], TOP3_COLS, top3_clients)
+                fill_table(self.top3_table, top3_clients, TOP3_COLS)
+        else:
+            show_message("Couldn't consult","Alert",False)
+        
     # Sign out 
     def logout_action(self, module):
         module.hide()
         self.login_tmp.show()
 
     #Set manager information
-    def set_manager_data(self, pname, pid):
-        self.label_info1.setText(pname)
-        self.label_info2.setText(pid)
-        self.label_info3.setText("Algun otro dato")
+    def set_manager_data(self, pname, plname, ptype):
+        self.label_info1.setText("Name: " + pname)
+        self.label_info2.setText(plname)
+        self.label_info3.setText(ptype)
 
     # Helps closing the login window and starts session
     def set_tmp_login(self, module):
