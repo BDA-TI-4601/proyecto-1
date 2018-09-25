@@ -1,0 +1,2724 @@
+from sql_connection import *
+
+def get_total_by_type( p_type, p_date_min, p_date_max ):
+    query = ("SELECT pt_id FROM PACKAGE_TYPE WHERE pt_name='"+p_type+"'")
+    content = new_query( query ).fetchall()[0][0]
+    query = ("EXEC packageTypeAmount "+str(content)+", '"+p_date_min+"', '"+p_date_max+"'")
+    content = new_query( query ).fetchall()
+    return content[0][1]
+
+def get_total_amount( p_branch ):
+    query = ("EXEC branchTotalAmount '"+p_branch+"'")
+    content = new_query( query ).fetchall()
+    return content[0][0]
+
+def get_packages_per_client( p_date_min, p_date_max ):
+    query = ("EXEC packagesPerClient '"+p_date_min+"', '"+p_date_max+"'")
+    content = new_query( query ).fetchall()
+    orders = []
+    for i in content:
+        orders += [{"id_client":i[0],
+                    "name":i[1],
+                    "lname":i[2],
+                    "id_package_branch":i[3],
+                    "reception_date":i[4] }]
+    return str(orders)
+
+def get_avg_packages( p_date_min, p_date_max ):
+    query = ("EXEC averageAmountPerClient '"+p_date_min+"', '"+p_date_max+"'")
+    content = new_query( query ).fetchall()
+    clients = []
+    for i in content:
+        clients += [{"name":i[0],"lname":i[1],"average":i[2]}]
+    return str(clients)# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'admin_module.ui'
+#
+# Created by: PyQt4 UI code generator 4.12.1
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt4 import QtCore, QtGui
+from http_service import *
+from data_manager import *
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+
+###########################   Window Admin Class  ###################################
+
+class Ui_AdminModule(object):
+
+    def setupUi(self, AdminModule):
+        AdminModule.setObjectName(_fromUtf8("AdminModule"))
+        AdminModule.setFixedSize(945, 554)
+        AdminModule.move(200,100)
+        self.label = QtGui.QLabel(AdminModule)
+        self.label.setGeometry(QtCore.QRect(10, 50, 161, 51))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(18)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.label_2 = QtGui.QLabel(AdminModule)
+        self.label_2.setGeometry(QtCore.QRect(10, 300, 311, 51))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(18)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_2.setFont(font)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.label_3 = QtGui.QLabel(AdminModule)
+        self.label_3.setGeometry(QtCore.QRect(340, 50, 201, 51))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(18)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_3.setFont(font)
+        self.label_3.setObjectName(_fromUtf8("label_3"))
+        self.tableWidget = QtGui.QTableWidget(AdminModule)
+        self.tableWidget.setGeometry(QtCore.QRect(240, 360, 511, 171))
+        self.tableWidget.setObjectName(_fromUtf8("tableWidget"))
+        self.tableWidget.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.tableWidget.setDragDropOverwriteMode(False)
+        self.tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.tableWidget.setWordWrap(False)
+        self.tableWidget.setSortingEnabled(False)
+        self.tableWidget.setColumnCount(AVERAGE_COLS)
+        self.tableWidget.setRowCount(0)
+        self.tableWidget.horizontalHeader().setDefaultAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter|
+                                                          QtCore.Qt.AlignCenter)
+        self.tableWidget.horizontalHeader().setHighlightSections(False)
+        self.tableWidget.horizontalHeader().setStretchLastSection(True)
+        self.tableWidget.verticalHeader().setVisible(False)
+        self.tableWidget.setAlternatingRowColors(True)
+        self.tableWidget.verticalHeader().setDefaultSectionSize(20)
+        self.tableWidget.setHorizontalHeaderLabels(amount_packages_columns)            
+        for i, width in enumerate((50, 90, 115, 150, 165), start=0):
+            self.tableWidget.setColumnWidth(i, width)
+        
+        self.dateEdit = QtGui.QDateEdit(AdminModule)
+        self.dateEdit.setGeometry(QtCore.QRect(120, 370, 110, 33))
+        self.dateEdit.setObjectName(_fromUtf8("dateEdit"))
+        self.dateEdit_2 = QtGui.QDateEdit(AdminModule)
+        self.dateEdit_2.setGeometry(QtCore.QRect(120, 420, 110, 33))
+        self.dateEdit_2.setObjectName(_fromUtf8("dateEdit_2"))
+        self.pushButton = QtGui.QPushButton(AdminModule)
+        self.pushButton.setGeometry(QtCore.QRect(20, 490, 91, 35))
+        self.pushButton.setObjectName(_fromUtf8("pushButton"))
+        self.months = QtGui.QComboBox(AdminModule)
+        self.months.setGeometry(QtCore.QRect(450, 120, 83, 33))
+        self.months.setObjectName(_fromUtf8("months"))
+        self.type_package = QtGui.QComboBox(AdminModule)
+        self.type_package.setGeometry(QtCore.QRect(450, 170, 83, 33))
+        self.type_package.setObjectName(_fromUtf8("type_package"))
+        self.pushButton_2 = QtGui.QPushButton(AdminModule)
+        self.pushButton_2.setGeometry(QtCore.QRect(410, 230, 121, 41))
+        self.pushButton_2.setObjectName(_fromUtf8("pushButton_2"))
+        self.pushButton_3 = QtGui.QPushButton(AdminModule)
+        self.pushButton_3.setGeometry(QtCore.QRect(130, 490, 101, 35))
+        self.pushButton_3.setObjectName(_fromUtf8("pushButton_3"))
+        self.pushButton_4 = QtGui.QPushButton(AdminModule)
+        self.pushButton_4.setGeometry(QtCore.QRect(820, 30, 101, 35))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.pushButton_4.setFont(font)
+        self.pushButton_4.setObjectName(_fromUtf8("pushButton_4"))
+        self.label_5 = QtGui.QLabel(AdminModule)
+        self.label_5.setGeometry(QtCore.QRect(800, 128, 190, 50))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_5.setFont(font)
+        self.label_5.setObjectName(_fromUtf8("label_5"))
+        self.label_8 = QtGui.QLabel(AdminModule)
+        self.label_8.setGeometry(QtCore.QRect(800, 390, 141, 161))
+        self.label_8.setText(_fromUtf8(""))
+        self.label_8.setPixmap(QtGui.QPixmap(_fromUtf8("images/administrator.png")))
+        self.label_8.setObjectName(_fromUtf8("label_8"))
+        self.label_6 = QtGui.QLabel(AdminModule)
+        self.label_6.setGeometry(QtCore.QRect(800, 160, 190, 50))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_6.setFont(font)
+        self.label_6.setObjectName(_fromUtf8("label_6"))
+        self.label_7 = QtGui.QLabel(AdminModule)
+        self.label_7.setGeometry(QtCore.QRect(800, 200, 190, 50))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_7.setFont(font)
+        self.label_7.setObjectName(_fromUtf8("label_7"))
+        self.label_9 = QtGui.QLabel(AdminModule)
+        self.label_9.setGeometry(QtCore.QRect(20, 380, 91, 21))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_9.setFont(font)
+        self.label_9.setObjectName(_fromUtf8("label_9"))
+        self.label_10 = QtGui.QLabel(AdminModule)
+        self.label_10.setGeometry(QtCore.QRect(20, 420, 91, 21))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_10.setFont(font)
+        self.label_10.setObjectName(_fromUtf8("label_10"))
+        self.lineEdit = QtGui.QLineEdit(AdminModule)
+        self.lineEdit.setGeometry(QtCore.QRect(10, 110, 191, 41))
+        self.lineEdit.setObjectName(_fromUtf8("lineEdit"))
+        self.pushButton_5 = QtGui.QPushButton(AdminModule)
+        self.pushButton_5.setGeometry(QtCore.QRect(80, 160, 121, 41))
+        self.pushButton_5.setObjectName(_fromUtf8("pushButton_5"))
+        self.label_11 = QtGui.QLabel(AdminModule)
+        self.label_11.setGeometry(QtCore.QRect(370, 130, 91, 21))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_11.setFont(font)
+        self.label_11.setObjectName(_fromUtf8("label_11"))
+        self.label_12 = QtGui.QLabel(AdminModule)
+        self.label_12.setGeometry(QtCore.QRect(310, 170, 131, 21))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_12.setFont(font)
+        self.label_12.setObjectName(_fromUtf8("label_12"))
+        self.retranslateUi(AdminModule)
+        QtCore.QMetaObject.connectSlotsByName(AdminModule)
+        self.login_tmp = None
+        self.lineEdit.setReadOnly(True)
+        fill_boxes(self.months, months)
+        fill_boxes(self.type_package, type_package_data)
+
+        self.amount_mensual = QtGui.QLineEdit(AdminModule)
+        self.amount_mensual.setGeometry(QtCore.QRect(550, 70, 191, 41))
+        self.amount_mensual.setObjectName(_fromUtf8("amount_mensual"))
+        self.amount_mensual.setReadOnly(True)
+
+
+    def retranslateUi(self, AdminModule):
+        AdminModule.setWindowTitle(_translate("AdminModule", "CourierTEC - Admin Session", None))
+        self.label.setText(_translate("AdminModule", "Raised Money", None))
+        self.label_2.setText(_translate("AdminModule", "Average Amount Packages", None))
+        self.label_3.setText(_translate("AdminModule", "Mensual Amount", None))
+        self.pushButton.setText(_translate("AdminModule", "Calculate", None))
+        self.pushButton_2.setText(_translate("AdminModule", "Consult", None))
+        self.pushButton_3.setText(_translate("AdminModule", "Add Average", None))
+        self.pushButton_4.setText(_translate("AdminModule", "Log Out", None))
+        self.label_5.setText(_translate("AdminModule", "admin info 1", None))
+        self.label_6.setText(_translate("AdminModule", "admin info 2", None))
+        self.label_7.setText(_translate("AdminModule", "admin info 3", None))
+        self.label_9.setText(_translate("AdminModule", "Start Date:", None))
+        self.label_10.setText(_translate("AdminModule", "Final Date:", None))
+        self.pushButton_5.setText(_translate("AdminModule", "Refresh", None))
+        self.label_11.setText(_translate("AdminModule", "Month:", None))
+        self.label_12.setText(_translate("AdminModule", "Type Package:", None))
+        self.pushButton.clicked.connect(self.amount_packages_bydate) #amount packages
+        self.pushButton_2.clicked.connect(self.mensual_amount) #mensual amount
+        self.pushButton_3.clicked.connect(self.add_averages) #amount packages
+        self.pushButton_4.clicked.connect(lambda: self.logout_action(AdminModule)) #logout
+        self.pushButton_5.clicked.connect(self.refresh_raised_money) #refresh
+
+    def add_averages(self):
+        average_json = {"operation":4 ,"date_min":"", "date_max":""}
+        average_json["date_min"] = serialize_date( self.dateEdit.text(), "/", "-" )
+        average_json["date_max"] = serialize_date( self.dateEdit_2.text(), "/", "-" )
+        #Http request
+        response = send_request(admin_request, average_json, True)
+        if (response["status"] == int(OK)):
+            average_bydate = []
+            data = ast.literal_eval(response["data"]) 
+            for i in range (len(data)):
+                average_bydate.append( data[i]["average"] )
+            print average_bydate 
+            add_column_table(average_bydate, amount_packages_bydate, AVERAGE_COLS)
+            fill_table(self.tableWidget, amount_packages_bydate, AVERAGE_COLS)
+
+    def amount_packages_bydate(self):
+        #Create json
+        amount_json = {"operation":3,"date_min":"","date_max":""}
+        amount_json["date_min"] = serialize_date( self.dateEdit.text(), "/", "-" )
+        amount_json["date_max"] = serialize_date( self.dateEdit_2.text(), "/", "-" )
+        response = send_request(admin_request, amount_json, True)
+        if (response["status"] == int(OK)):
+            self.amount_mensual.setText( unicode(response["data"]) )
+            "ID Package","ID Client","Last Name","Amount", "Reception Date", "Average"
+            serialize_table(response["data"], ["id_package_branch","id_client","lname","name","reception_date","reception_date"], AVERAGE_COLS, amount_packages_bydate)
+            fill_table(self.tableWidget, amount_packages_bydate, AVERAGE_COLS)
+
+
+    def mensual_amount(self):
+        mensual_json = {"operation":1,"type":"","date_min":"","date_max":"", "branch":""}
+        mensual_json["type"] = unicode(self.type_package.currentText())  
+        mensual_json["date_min"] = serialize_date( self.dateEdit.text(), "/", "-" )
+        mensual_json["date_max"] = serialize_date( self.dateEdit_2.text(), "/", "-" )
+        response = send_request(admin_request, mensual_json, True)
+        if (response["status"] == int(OK)):
+            self.amount_mensual.setText( unicode(response["data"]) )
+      
+    def refresh_raised_money(self):
+        #http request
+        raised_json = {"operation":2, "branch":""}
+        raised_json["branch"] = unicode("Heredia")
+        response = send_request(admin_request, raised_json, True)
+        if (response["status"] == int(OK)):
+            self.lineEdit.setText( unicode(response["data"]) )
+
+    def set_admin_data(self, pname, plname, ptype):
+        self.label_5.setText("Name: " + pname)
+        self.label_6.setText(plname)
+        self.label_7.setText(ptype)
+
+    def set_tmp_login(self, module):
+        self.login_tmp = module
+
+    def logout_action(self, module):
+        module.hide()
+        self.login_tmp.show()
+
+    def set_types(self, ptypes):
+        print ptypes
+        fill_boxes(self.type_package, ptypes)
+from flask import Flask, jsonify, request, json
+from src.branches_controller import *
+from src.login_controller import *
+from src.packages_controller import *
+from src.manager_controller import *
+from src.admin_controller import *
+from src.register_controller import *
+from src.info_controller import *
+
+app = Flask(__name__)
+
+@app.route("/ask_branches", methods=['GET'])
+def get_branches_handler():
+	response = get_branches()
+	return jsonify( response )
+
+@app.route("/branches", methods=['POST'])
+def get_branch_handler():
+	json_request = request.get_json(force=True)
+	branch_name_str = json_request['id']
+	response = get_branch( branch_name_str )
+	return jsonify( response)
+
+@app.route("/login", methods=['POST'])
+def post_login_handler():
+	json_request = request.get_json(force=True)
+	username_str = json_request['username']
+	password_str = json_request['password']
+	id_branch_int = json_request['id_branch']
+	response = user_login( username_str, password_str )
+	response2 = get_branch( id_branch_int )
+	response3 = "NONE"
+	if( response["status"] == 100 ):
+		response3 = get_packages_by_id_client( response["data"]["id"], id_branch_int )
+	if( response["status"] == 101 ):
+		response3 = get_packages_by_branch( id_branch_int )
+	return jsonify( {"status":response["status"], 
+					"data":response["data"],
+					"branch":response2["data"],
+					"packages":response3 } )
+
+@app.route("/manager", methods=['POST'])
+def info_manager_total_handler():
+	json_request = request.get_json(force=True)
+	operation = json_request['operation']
+	response = {"status":404,"data":"Operation doesn't exist"}
+	if( operation == 1 ):
+		id_branch_int = json_request['branch']
+		date_min = json_request['date_min']
+		date_max = json_request['date_max']
+		response = get_total_manager( id_branch_int, date_min, date_max )
+		response = {"status":200, "data":response}
+	elif( operation == 2 ):
+		date_min = json_request['date_min']
+		date_max = json_request['date_max']
+		response = get_3_top_clients( date_min, date_max )
+		response = {"status":200, "data":response}
+	return jsonify(response)
+
+@app.route("/admin", methods=['POST'])
+def admin_handler():
+	json_request = request.get_json(force=True)
+	operation = json_request['operation']
+	response = {"status":404,"data":"Operation doesn't exist"}
+	if( operation == 1 ):
+		type_int = json_request['type']
+		date_min = json_request['date_min']
+		date_max = json_request['date_max']
+		response = get_total_by_type( type_int, date_min, date_max )
+		response = {"status":200,"data":response}
+	elif( operation == 2 ):
+		branch = json_request['branch']
+		response = get_total_amount( branch )
+		response = {"status":200,"data":response}
+	elif( operation == 3 ):
+		date_min = json_request['date_min']
+		date_max = json_request['date_max']
+		response = get_packages_per_client( date_min, date_max )
+		response = {"status":200,"data":response}
+	elif( operation == 4 ):
+		date_min = json_request['date_min']
+		date_max = json_request['date_max']
+		response = get_avg_packages( date_min, date_max )
+		response = {"status":200,"data":response}
+	return jsonify(response)
+
+@app.route("/register", methods=['POST'])
+def register_handler():
+	json_request = request.get_json(force=True)
+	client_id = json_request['id']
+	name = json_request['name']
+	lname = json_request['lname']
+	telephone = json_request['telephone']
+	username = json_request['username']
+	password = json_request['password']
+	client_type = json_request['type']
+	province = json_request['province']
+	response = create_user( client_id,
+							name,
+							lname,
+							telephone,
+							username,
+							password,
+							client_type,
+							province )
+	return jsonify(response)
+
+@app.route("/new_package", methods=['POST'])
+def new_package_handler():
+	json_request = request.get_json(force=True)
+	client_id = json_request['id']
+	reception_date = json_request['reception_date']
+	type_package = json_request['type']
+	weight = json_request['weight']
+	description = json_request['description']
+	value = json_request['value']
+	branch = json_request['branch']
+	response = new_package(	client_id,
+							reception_date,
+							type_package,
+							weight,
+							description,
+							value,
+							branch )
+	return jsonify(response)
+
+@app.route("/package", methods=['POST'])
+def update_package_handler():
+	json_request = request.get_json(force=True)
+	package = json_request['package_id']
+	delivery_date = json_request['delivery_date']
+	response = update_package( package, delivery_date )
+	return jsonify(response)
+
+@app.route("/ask_types", methods=['GET'])
+def ask_types_handler():
+	response = get_types()
+	return jsonify({"status":200,"data":response})
+
+
+if __name__ == "__main__":
+	#app.debug = True		# Release server
+	app.debug = True		# For debugging purposes
+	app.run( host = '0.0.0.0', port=8080, processes=True )
+
+
+from tools import *
+from database_items import *
+from sql_connection import *
+
+def get_branches():
+    branches = []
+    query = (   "SELECT * FROM BRANCH")
+    db_data = new_query( query )
+    content = db_data.fetchall()
+    for i in content:
+        branches += [parse_branch(  i[0],
+                                    i[1],
+                                    i[2],
+                                    i[3],
+                                    i[4],
+                                    i[5] )]
+    for i in branches:
+        i["ubication"] = get_ubication_name(i["ubication"])
+        i["type"] = get_branch_type_name(i["type"])
+
+    return send_response( branches )
+
+def get_ubication_name( p_id_ubication ):
+    name = 0
+    query = ("SELECT u_place FROM UBICATION WHERE u_id="+str(p_id_ubication))
+    db_data = new_query( query )
+    content = db_data.fetchall()
+    return content[0][0] 
+
+def get_branch_type_name( p_id ):
+    name = 0
+    query = ("SELECT bt_name FROM BRANCH_TYPE WHERE bt_id="+str(p_id))
+    db_data = new_query( query )
+    content = db_data.fetchall()
+    return content[0][0] 
+
+def send_response( p_branches ):
+    data = {"status":200, "data":p_branches}
+    return data
+
+def get_branch( p_id ):
+    branch = 0
+    query = ("SELECT * FROM BRANCH WHERE b_id="+str(p_id))
+    content = new_query( query ).fetchall()
+    branch = parse_branch(  content[0][0],
+                            content[0][1],
+                            content[0][2],
+                            content[0][3],
+                            content[0][4],
+                            content[0][5] )
+    branch["ubication"] = get_ubication_name( branch["ubication"] )
+    branch["type"] = get_branch_type_name(branch["type"])
+    return send_response( branch )
+def get_packages_
+# -*- coding: utf-8 -*-
+
+from PyQt4 import QtCore, QtGui
+from data_manager import *
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+
+###########################   Window Client Class  ###################################
+
+class Ui_ClientModule(QtGui.QWidget):
+
+    def setupUi(self, ClientModule):
+        ClientModule.setObjectName(_fromUtf8("ClientModule"))
+        ClientModule.setFixedSize(1100, 468)
+        ClientModule.move(200, 100)
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_img = QtGui.QLabel(ClientModule)
+        self.label_img.setGeometry(QtCore.QRect(760, 280, 161, 161))
+        self.label_img.setText(_fromUtf8(""))
+        self.label_img.setPixmap(QtGui.QPixmap(_fromUtf8("images/pack.png")))
+        self.label_img.setObjectName(_fromUtf8("label_img"))
+        self.label_branch = QtGui.QLabel(ClientModule)
+        self.label_branch.setGeometry(QtCore.QRect(750, 115, 250, 30))
+        self.label_branch.setFont(font)
+        self.label_branch.setObjectName(_fromUtf8("label_branch"))
+        self.label_ubication = QtGui.QLabel(ClientModule)
+        self.label_ubication.setGeometry(QtCore.QRect(750, 155, 250, 30))
+        self.label_ubication.setFont(font)
+        self.label_ubication.setObjectName(_fromUtf8("label_ubication"))
+        self.label_telephone = QtGui.QLabel(ClientModule)
+        self.label_telephone.setGeometry(QtCore.QRect(750, 195, 250, 30))
+        self.label_telephone.setFont(font)
+        self.label_telephone.setObjectName(_fromUtf8("label_telephone"))
+        self.label_email = QtGui.QLabel(ClientModule)
+        self.label_email.setGeometry(QtCore.QRect(750, 235, 500, 30))
+        self.label_email.setFont(font)
+        self.label_email.setObjectName(_fromUtf8("label_email"))
+        self.label_package = QtGui.QLabel(ClientModule)
+        self.label_package.setGeometry(QtCore.QRect(20, 40, 900, 70))
+        font.setPointSize(26)
+        self.label_package.setFont(font)
+        self.label_package.setObjectName(_fromUtf8("label_package"))
+        self.logout_button = QtGui.QPushButton(ClientModule)
+        self.logout_button.setGeometry(QtCore.QRect(800, 40, 200, 35))
+        font.setPointSize(14)
+        self.logout_button.setFont(font)
+        self.logout_button.setObjectName(_fromUtf8("logout_button"))
+        self.table_client_packages = QtGui.QTableWidget(ClientModule)
+        self.table_client_packages.setGeometry(QtCore.QRect(10, 100, 681, 341))
+        self.table_client_packages.setObjectName(_fromUtf8("table_client_packages"))
+        self.table_client_packages.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.table_client_packages.setDragDropOverwriteMode(False)
+        self.table_client_packages.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.table_client_packages.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.table_client_packages.setWordWrap(False)
+        self.table_client_packages.setSortingEnabled(False)
+        self.table_client_packages.setColumnCount(PACKAGE_COLS)
+        self.table_client_packages.setRowCount(0)
+        self.table_client_packages.horizontalHeader().setDefaultAlignment(QtCore.Qt.AlignHCenter|
+                                                                          QtCore.Qt.AlignVCenter|
+                                                                          QtCore.Qt.AlignCenter)
+        self.table_client_packages.horizontalHeader().setHighlightSections(False)
+        self.table_client_packages.horizontalHeader().setStretchLastSection(True)
+        self.table_client_packages.verticalHeader().setVisible(False)
+        self.table_client_packages.setAlternatingRowColors(True)
+        self.table_client_packages.verticalHeader().setDefaultSectionSize(20)
+        self.table_client_packages.setHorizontalHeaderLabels(package_columns)            
+        for i, width in enumerate((80, 120, 120, 110, 150), start=0):
+            self.table_client_packages.setColumnWidth(i, width)
+        fill_table(self.table_client_packages, packages_data, PACKAGE_COLS)
+
+        self.label = QtGui.QLabel(ClientModule)
+        self.label.setGeometry(QtCore.QRect(760, 30, 41, 51))
+        self.label.setText(_fromUtf8(""))
+        self.label.setPixmap(QtGui.QPixmap(_fromUtf8("images/user.png")))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.login_tmp = None
+        self.retranslateUi(ClientModule) 
+        QtCore.QMetaObject.connectSlotsByName(ClientModule)
+        self.setWindowIcon(QtGui.QIcon('images/logo.png'))
+
+    def retranslateUi(self, ClientModule):
+        ClientModule.setWindowTitle(_translate("ClientModule", "CourierTEC - Client Session", None))
+        self.label_branch.setText(_translate("ClientModule", "", None))
+        self.label_ubication.setText(_translate("ClientModule", "", None))
+        self.label_telephone.setText(_translate("ClientModule", "", None))
+        self.label_email.setText(_translate("ClientModule", "", None))
+        self.label_package.setText(_translate("ClientModule", "", None))
+        self.logout_button.setText(_translate("ClientModule", "Log Out", None))
+        self.logout_button.clicked.connect(lambda: self.log_out_action(ClientModule))
+
+    def fill_client_table(self, ppackages):
+        serialize_table(ppackages, ["id","weight","reception_date","delivery_date","type","category","total"], PACKAGE_COLS, packages_data)
+        fill_table(self.table_client_packages, packages_data, PACKAGE_COLS)
+        
+    # Helps closing the login window and starts session
+    def set_tmp_login(self, plogin):
+        self.login_tmp = plogin
+
+    #Sign out 
+    def log_out_action(self, module):
+        module.hide()
+        self.login_tmp.show()
+
+    #Set the client info 
+    def set_client_data(self, pname, pbranch, pubication, ptel, pemail):
+        self.label_package.setText( "Check your packages, " + pname )
+        self.label_branch.setText( "Branch: " + pbranch )
+        self.label_ubication.setText( "Ubication: " + pubication )
+        self.label_telephone.setText( "Telephone " + ptel )
+        self.label_email.setText( "Email: " + pemail )
+
+def parse_province(     p_id, 
+                        p_name ):
+    province = {
+        'id' : p_id,
+        'name' : p_name
+    }
+    return province
+
+def parse_client_type(  ct_id,
+                        ct_name ):
+    client_type = {
+        'id' : ct_id,
+        'name' : ct_name
+    }
+    return client_type
+
+def parse_client(   c_id, 
+                    c_account, 
+                    c_name, 
+                    c_lname, 
+                    c_telephone, 
+                    c_username, 
+                    c_password, 
+                    c_type, 
+                    c_province ):
+    client = {
+        'id' : c_id,
+        'account' : c_account,
+        'name' : c_name,
+        'lname' : c_lname,
+        'telephone' : c_telephone,
+        'username' : c_username,
+        'password' : c_password,
+        'type' : c_type,
+        'province' : c_province
+    }
+    return client
+
+def parse_package_branch(   pb_id,
+                            pb_total,
+                            pb_delivery_date,
+                            pb_id_package,
+                            pb_id_client,
+                            pb_id_branch ):
+    package_branch = {
+        'id' : pb_id,
+        'total' : pb_total,
+        'delivery_date' : pb_delivery_date,
+        'id_package' : pb_id_package,
+        'id_client' : pb_id_client,
+        'id_branch' : pb_id_branch
+    }
+    return package_branch
+
+def parse_package(  p_id,
+                    p_reception_date,
+                    p_value,
+                    p_weight,
+                    p_type ):
+    package = {
+        'id' : p_id,
+        'reception_date' : p_reception_date,
+        'value' : p_value,
+        'weight' : p_weight,
+        'type' : p_type
+    }
+    return package
+
+def parse_package_type( pt_id,
+                        pt_name,
+                        pt_price_kg,
+                        pt_category ):
+    package_type = {
+        'id' : pt_id,
+        'name' : pt_name,
+        'price_kg' : pt_price_kg,
+        'category' : pt_category
+    }
+    return package_type
+
+def parse_category( ca_id,
+                    ca_name ):
+    category = {
+        'id' : ca_id,
+        'name' : ca_name
+    }
+    return category
+
+def parse_ubication(    u_id,
+                        u_place,
+                        u_address ):
+    ubication = {
+        'id' : u_id,
+        'place' : u_place,
+        'address' : u_address
+    }
+    return ubication
+
+def parse_branch(   b_id,
+                    b_telephone,
+                    b_schedule,
+                    b_email,
+                    b_type,
+                    b_ubication ):
+    branch = {
+        'id' : b_id,
+        'telephone' : b_telephone,
+        'schedule' : b_schedule,
+        'email' : b_email,
+        'type' : b_type,
+        'ubication' : b_ubication
+    }
+    return branch
+
+def parse_works_on( wo_worker,
+                    wo_branch,
+                    wo_job ):
+    works_on = {
+        'worker' : wo_worker,
+        'branch' : wo_branch,
+        'job' : wo_job
+    }
+    return works_on
+
+def parse_branch_type(  bt_id,
+                        bt_name ):
+    branch_type = {
+        'id' : bt_id,
+        'name' : bt_name,
+    }
+    return branch_type
+
+def parse_worker(   w_id,
+                    w_name,
+                    w_lname,
+                    w_telephone,
+                    w_username,
+                    w_password ):
+    worker = {
+        'id' : w_id,
+        'name' : w_name,
+        'lname' : w_lname,
+        'telephone' : w_telephone,
+        'username' : w_username,
+        'password' : w_password
+    }
+    return worker
+        
+def parse_package_client(   p_id,
+                            p_reception_date,
+                            pt_name,
+                            ca_name,
+                            p_weight,
+                            pb_delivery_date,
+                            pb_total ):
+    package_client = {
+        'id' : p_id,
+        'reception_date' : p_reception_date,
+        'type' : pt_name,
+        'category' : ca_name,
+        'weight' : p_weight,
+        'delivery_date' : pb_delivery_date,
+        'total' : pb_total
+    }
+    return package_client
+
+def parse_packages_branch(   pb_id_package,
+                            pb_id_client,
+                            c_name,
+                            c_lname,
+                            p_reception_date,
+                            pb_delivery_date,
+                            p_weight,
+                            p_value,
+                            pb_total,
+                            pt_name,
+                            ca_name ):
+    package_branch = {
+        'id_package' : pb_id_package,
+        'id_client' : pb_id_client,
+        'client_name' : c_name,
+        'client_lname' : c_lname,
+        'reception_date' : p_reception_date,
+        'delivery_date' : pb_delivery_date,
+        'weight' : p_weight,
+        'value' : p_value,
+        'total' : pb_total,
+        'type' : pt_name,
+        'category' : ca_name
+    }
+    return package_branch
+# coding=utf-8
+from PyQt4 import QtGui
+import ast
+
+#Comboboxes information
+provinces = []
+total_provinces = [u"San JosÃ©","Alajuela","Cartago","Heredia","Guanacaste","Puntarenas",u"LimÃ³n"]
+type_client_data = ["Gold","Platinum","Bronze"]
+type_package_data = [ ]
+category_package_data = ["Regular", "Special"]
+months = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Setiembre","Octubre","Noviembre","Diciembre"]
+
+# STATUS CODES
+ERROR = 404
+CLIENT = 100
+WORKER = 101
+
+#NUMBER COLUMNS 
+PACKAGE_EMP_COLS = 8
+PACKAGE_COLS = 7
+TOP3_COLS = 3
+MENSUAL_COLS = 2
+AVERAGE_COLS = 6
+
+#################   TABLE COLUMNS     ########################################################### 
+
+package_columns = ["ID","Weight","Reception Date", "Delivered","Type","Category","Total"]
+packages_emp = ["ID Pack","ID Client","Last Name","Type","Category","Value","Reception Date","Delivery Date"]
+top3_columns = ["Name","Lastname","Total"]
+amount_packages_columns  = ["ID Package","ID Client","Last Name","Name", "Reception Date", "Average"]
+
+
+#################   TABLE DATA     ############################################################## 
+
+packages_data = [ ]
+all_packages = [ ]
+top3_clients = [ ]
+
+amount_packages_bydate = []
+
+#Fill combo boxes with data
+def fill_boxes( pbox, pdata ):
+    for i in range(len(pdata)):
+        pbox.addItem(pdata[i])
+
+# Fill table with the corresponding data
+def fill_table( ptable, ptuples, pcols ):
+    ptable.clearContents()
+    _row = 0
+    for i in ptuples:
+        ptable.setRowCount(_row + 1)    
+        for j in range (pcols):
+            ptable.setItem(_row, j, QtGui.QTableWidgetItem(i[j]))
+        _row += 1
+
+#Delete some row in table
+def delete_row( data, prow ):
+    del data[prow]
+
+#Add column into the table
+def add_column_table( pcolumn, ptable, pamount ):
+    print len(ptable)
+    for i in range(len(ptable)):
+        for j in range (pamount):
+            if (j == (pamount-1)):
+                ptable[i][j] = pcolumn[i]
+            
+
+def serialize_date( pdate, pchar1, pchar2 ):
+    _date = str(pdate)
+    date_decomp = _date.split(pchar1)
+    parsed_date = ( "20"+date_decomp[2]+pchar2+date_decomp[1]+pchar2+date_decomp[0] )
+    return parsed_date 
+    
+
+def serialize_table(ppackages, pspaces, pcols, packages_arr ):
+    _packages = ast.literal_eval(ppackages)
+    for i in range ( len(_packages) ):
+        new_package = []
+        for j in range( pcols ):
+            new_package.append( unicode(_packages[i][pspaces[j]]) )   
+        packages_arr.append( new_package)
+
+
+
+def set_package_types( types_arr ):
+    global type_package_data
+    type_package_data = types_arr
+
+# -*- coding: utf-8 -*-
+
+from PyQt4 import QtCore, QtGui
+from employee_module2 import *
+from data_manager import *
+
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+
+###########################   Window Employee Class  ###################################
+
+
+class Ui_EmployeeModule1(QtGui.QWidget):
+
+    def setupUi(self, EmployeeModule1):
+        EmployeeModule1.setObjectName(_fromUtf8("EmployeeModule1"))
+        EmployeeModule1.setFixedSize(912, 512)
+        EmployeeModule1.move(200, 100)
+        self.label = QtGui.QLabel(EmployeeModule1)
+        self.label.setGeometry(QtCore.QRect(80, 40, 201, 51))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(26)
+        self.label.setFont(font)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.all_packages_table = QtGui.QTableWidget(EmployeeModule1)
+        self.all_packages_table.setGeometry(QtCore.QRect(20, 120, 691, 321))
+        self.all_packages_table.setObjectName(_fromUtf8("all_packages_table"))
+        self.all_packages_table.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.all_packages_table.setDragDropOverwriteMode(False)
+        self.all_packages_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.all_packages_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.all_packages_table.setWordWrap(False)
+        self.all_packages_table.setSortingEnabled(False)
+        self.all_packages_table.setColumnCount(PACKAGE_EMP_COLS)
+        self.all_packages_table.setRowCount(0)
+        self.all_packages_table.horizontalHeader().setDefaultAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter|
+                                                          QtCore.Qt.AlignCenter)
+        self.all_packages_table.horizontalHeader().setHighlightSections(False)
+        self.all_packages_table.horizontalHeader().setStretchLastSection(True)
+        self.all_packages_table.verticalHeader().setVisible(False)
+        self.all_packages_table.setAlternatingRowColors(True)
+        self.all_packages_table.verticalHeader().setDefaultSectionSize(20)
+        self.all_packages_table.setHorizontalHeaderLabels(packages_emp)            
+        for i, width in enumerate((90, 120, 160, 200, 210, 220, 230), start=0):
+            self.all_packages_table.setColumnWidth(i, width)
+
+        self.label_name = QtGui.QLabel(EmployeeModule1)
+        self.label_name.setGeometry(QtCore.QRect(750, 120, 150, 50))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_name.setFont(font)
+        self.label_name.setObjectName(_fromUtf8("label_name"))
+        self.label_employee = QtGui.QLabel(EmployeeModule1)
+        self.label_employee.setGeometry(QtCore.QRect(750, 210, 150, 50))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_employee.setFont(font)
+        self.label_employee.setObjectName(_fromUtf8("label_employee"))
+        self.new_package_button = QtGui.QPushButton(EmployeeModule1)
+        self.new_package_button.setGeometry(QtCore.QRect(20, 460, 151, 35))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.new_package_button.setFont(font)
+        self.new_package_button.setObjectName(_fromUtf8("new_package_button"))
+        self.logout_button = QtGui.QPushButton(EmployeeModule1)
+        self.logout_button.setGeometry(QtCore.QRect(750, 40, 151, 35))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.logout_button.setFont(font)
+        self.logout_button.setObjectName(_fromUtf8("logout_button"))
+        self.label_img = QtGui.QLabel(EmployeeModule1)
+        self.label_img.setGeometry(QtCore.QRect(750, 270, 131, 191))
+        self.label_img.setText(_fromUtf8(""))
+        self.label_img.setPixmap(QtGui.QPixmap(_fromUtf8("images/employee.png")))
+        self.label_img.setObjectName(_fromUtf8("label_img"))
+        self.label_id = QtGui.QLabel(EmployeeModule1)
+        self.label_id.setGeometry(QtCore.QRect(750, 160, 200, 40))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_id.setFont(font)
+        self.label_id.setObjectName(_fromUtf8("label_id"))
+        self.label_6 = QtGui.QLabel(EmployeeModule1)
+        self.label_6.setGeometry(QtCore.QRect(290, 30, 71, 61))
+        self.label_6.setText(_fromUtf8(""))
+        self.label_6.setPixmap(QtGui.QPixmap(_fromUtf8("images/pack_little.png")))
+        self.label_6.setObjectName(_fromUtf8("label_6"))
+        self.label_7 = QtGui.QLabel(EmployeeModule1)
+        self.label_7.setGeometry(QtCore.QRect(20, 30, 51, 61))
+        self.label_7.setText(_fromUtf8(""))
+        self.label_7.setPixmap(QtGui.QPixmap(_fromUtf8("images/pack_little.png")))
+        self.label_7.setObjectName(_fromUtf8("label_7"))
+        self.login_tmp = None
+        self.retranslateUi(EmployeeModule1)
+        QtCore.QMetaObject.connectSlotsByName(EmployeeModule1)
+        self.setWindowIcon(QtGui.QIcon('images/logo.png'))
+        self.pack_types = None
+
+    def retranslateUi(self, EmployeeModule1):
+        EmployeeModule1.setWindowTitle(_translate("EmployeeModule1", "CourierTEC - Employee Session", None))
+        self.label.setText(_translate("EmployeeModule1", "All Packages", None))
+        self.label_name.setText(_translate("EmployeeModule1", "", None))
+        self.label_employee.setText(_translate("EmployeeModule1", "", None))
+        self.new_package_button.setText(_translate("EmployeeModule1", "New Package...", None))
+        self.logout_button.setText(_translate("EmployeeModule1", "Log Out", None))
+        self.label_id.setText(_translate("EmployeeModule1", "", None))
+        self.new_package_button.clicked.connect(self.open_package_form)
+        self.logout_button.clicked.connect(lambda: self.logout_action(EmployeeModule1))
+        self.all_packages_table.cellDoubleClicked.connect(self.show_confirm_delete)  
+
+    # Function that handles the confirmation about delete some package
+    def show_confirm_delete(self, prow, pcolumn):
+        ret = question_message(self, 'Delete', "Are you sure you want to delete package?")
+        if (ret == QtGui.QMessageBox.Yes):
+            #http request para eliminar paquetes
+            print("Row %d and Column %d was deleted" % (prow, pcolumn))
+            print unicode(self.all_packages_table.item(prow, pcolumn).text())
+            del_json = {"package_id":"","delivery_date":""}
+            del_json["package_id"] = unicode(self.all_packages_table.item(prow, pcolumn).text())
+            del_json["delivery_date"] = unicode(self.all_packages_table.item(prow, pcolumn).text())
+            if (del_json["package_id"] == "" or del_json["delivery_date"] == ""):
+                pass
+            else:
+                response = send_request(delete_package_request, del_json, True)
+                if (response["status"] == int(OK)):
+                    delete_row(packages_data, prow)
+                    fill_table(self.all_packages_table, all_packages, PACKAGE_EMP_COLS)
+                else: 
+                    show_message("Coudn't delete package, try again..", "Alert", False)
+        else:
+            pass
+
+
+
+    def fill_employee_table(self, ppackages):
+        ["ID Pack","ID Client","Last Name","Type","Category","Value","Reception Date","Delivery Date"]
+        serialize_table(ppackages, ["id_package","id_client","client_lname","type","category","value","reception_date", "delivery_date"], PACKAGE_EMP_COLS, all_packages)
+        fill_table(self.all_packages_table, all_packages, PACKAGE_EMP_COLS)
+
+     # Helps closing the login window and starts session
+    def set_tmp_login(self, plogin):
+        self.login_tmp = plogin
+
+    # Open package form in order to create a new package
+    def open_package_form(self):
+        self.window = QtGui.QMainWindow()
+        self.ui = Ui_EmployeeModule2()
+        self.ui.setupUi(self.window)
+        self.ui.set_types2(self.pack_types)
+        self.window.show()
+
+    # Sign Out
+    def logout_action(self, module):
+        module.hide()
+        self.login_tmp.show()
+
+    #Set employee information
+    def set_employee_data(self, pname, plname, pid):
+        self.label_name.setText("Name: " + pname)
+        self.label_id.setText(plname)
+        self.label_employee.setText("ID: " + pid)
+
+    def set_types(self, ptypes):
+        self.pack_types = ptypes
+# -*- coding: utf-8 -*-
+
+from PyQt4 import QtCore, QtGui
+from http_service import *
+from messages import *
+from data_manager import *
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+###########################   Window Package Form Class  ###################################
+
+
+class Ui_EmployeeModule2(QtGui.QWidget):
+    def setupUi(self, EmployeeModule2):
+        EmployeeModule2.setObjectName(_fromUtf8("EmployeeModule2"))
+        EmployeeModule2.setFixedSize(655, 343)
+        EmployeeModule2.move(200, 100)
+        self.logo = QtGui.QLabel(EmployeeModule2)
+        self.logo.setGeometry(QtCore.QRect(500, 120, 151, 161))
+        self.logo.setText(_fromUtf8(""))
+        self.logo.setPixmap(QtGui.QPixmap(_fromUtf8("images/newpack.png")))
+        self.logo.setObjectName(_fromUtf8("logo"))
+        self.label_2 = QtGui.QLabel(EmployeeModule2)
+        self.label_2.setGeometry(QtCore.QRect(20, 30, 331, 41))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(26)
+        self.label_2.setFont(font)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.label_3 = QtGui.QLabel(EmployeeModule2)
+        self.label_3.setGeometry(QtCore.QRect(20, 100, 71, 19))
+        self.label_3.setObjectName(_fromUtf8("label_3"))
+        self.label_4 = QtGui.QLabel(EmployeeModule2)
+        self.label_4.setGeometry(QtCore.QRect(280, 100, 81, 19))
+        self.label_4.setObjectName(_fromUtf8("label_4"))
+        self.label_5 = QtGui.QLabel(EmployeeModule2)
+        self.label_5.setGeometry(QtCore.QRect(280, 150, 60, 19))
+        self.label_5.setObjectName(_fromUtf8("label_5"))
+        self.label_date = QtGui.QLabel(EmployeeModule2)
+        self.label_date.setGeometry(QtCore.QRect(20, 150, 111, 19))
+        self.label_date.setObjectName(_fromUtf8("label_date"))
+        self.label_7 = QtGui.QLabel(EmployeeModule2)
+        self.label_7.setGeometry(QtCore.QRect(280, 200, 60, 19))
+        self.label_7.setObjectName(_fromUtf8("label_7"))
+        self.label_8 = QtGui.QLabel(EmployeeModule2)
+        self.label_8.setGeometry(QtCore.QRect(20, 200, 60, 19))
+        self.label_8.setObjectName(_fromUtf8("label_8"))
+        self.label_10 = QtGui.QLabel(EmployeeModule2)
+        self.label_10.setGeometry(QtCore.QRect(20, 250, 60, 19))
+        self.label_10.setObjectName(_fromUtf8("label_10"))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.register_new_package_button = QtGui.QPushButton(EmployeeModule2)
+        self.register_new_package_button.setGeometry(QtCore.QRect(20, 300, 211, 35))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.register_new_package_button.setFont(font)
+        self.register_new_package_button.setObjectName(_fromUtf8("register_new_package_button"))
+        self.owner_data = QtGui.QLineEdit(EmployeeModule2)
+        self.owner_data.setGeometry(QtCore.QRect(140, 90, 91, 33))
+        self.owner_data.setText(_fromUtf8(""))
+        self.owner_data.setObjectName(_fromUtf8("owner_data"))
+        self.weight_data = QtGui.QLineEdit(EmployeeModule2)
+        self.weight_data.setGeometry(QtCore.QRect(370, 140, 101, 33))
+        self.weight_data.setObjectName(_fromUtf8("weight_data"))
+        self.reception_date_data = QtGui.QDateEdit(EmployeeModule2)
+        self.reception_date_data.setGeometry(QtCore.QRect(142, 140, 91, 33))
+        self.reception_date_data.setObjectName(_fromUtf8("reception_date_data"))        
+        self.value_data = QtGui.QLineEdit(EmployeeModule2)
+        self.value_data.setGeometry(QtCore.QRect(370, 190, 101, 33))
+        self.value_data.setObjectName(_fromUtf8("value_data"))
+        self.description_data = QtGui.QLineEdit(EmployeeModule2)
+        self.description_data.setGeometry(QtCore.QRect(370, 90, 101, 33))
+        self.description_data.setObjectName(_fromUtf8("description_data"))
+
+        self.type_data = QtGui.QComboBox(EmployeeModule2)
+        self.type_data.setGeometry(QtCore.QRect(140, 240, 91, 33))
+        self.type_data.setObjectName(_fromUtf8("type_data"))
+        self.type_pack = None
+
+        self.category_data = QtGui.QComboBox(EmployeeModule2)
+        self.category_data.setGeometry(QtCore.QRect(140, 190, 91, 33))
+        self.category_data.setObjectName(_fromUtf8("category_data"))
+        fill_boxes(self.category_data, category_package_data)
+
+        self.setWindowIcon(QtGui.QIcon('images/logo.png'))
+        self.retranslateUi(EmployeeModule2)
+        QtCore.QMetaObject.connectSlotsByName(EmployeeModule2)
+
+    def retranslateUi(self, EmployeeModule2):
+        EmployeeModule2.setWindowTitle(_translate("EmployeeModule2", "CourierTEC - Employee Session", None))
+        self.label_2.setText(_translate("EmployeeModule2", "Create New Package", None))
+        self.label_3.setText(_translate("EmployeeModule2", "ID Client:", None))
+        self.label_4.setText(_translate("EmployeeModule2", "Description:", None))
+        self.label_5.setText(_translate("EmployeeModule2", "Weight:", None))
+        self.label_date.setText(_translate("EmployeeModule2", "Reception Date:", None))
+        self.label_7.setText(_translate("EmployeeModule2", "Value:", None))
+        self.label_8.setText(_translate("EmployeeModule2", "Category:", None))
+        self.label_10.setText(_translate("EmployeeModule2", "Type:", None))
+        self.register_new_package_button.setText(_translate("EmployeeModule2", "Register New Package", None))
+        self.register_new_package_button.clicked.connect(lambda: self.send_package_request(EmployeeModule2) )
+
+    # Make json with the specific info about new package 
+    def set_package_json(self):
+        new_package_json["id"] = unicode(self.owner_data.text())
+        new_package_json["reception_date"] = str(self.reception_date_data.text())
+        new_package_json["category"] = str(self.category_data.currentText())
+        new_package_json["type"] = unicode(self.type_data.currentText())
+        new_package_json["description"] = unicode(self.description_data.text())
+        new_package_json["weight"] = int(self.weight_data.text())
+        new_package_json["value"] = int(self.value_data.text())
+
+    def set_types2(self, ptypes):
+        self.type_pack = ptypes
+        fill_boxes(self.type_data, self.type_pack)
+
+    
+    #Send the information to the database in order to save the new package info
+    def send_package_request(self, module):
+        if (self.owner_data.text().isEmpty() or self.weight_data.text().isEmpty() or
+         self.reception_date_data.text().isEmpty() or self.value_data.text().isEmpty() or 
+         self.description_data.text().isEmpty()):
+            show_message("Please insert the required information", "Warning", False)
+        else:
+            #Send package request to server API
+            self.set_package_json()
+            register_response = send_request(new_package_request, new_package_json, True) 
+            if (register_response["status"] == int(OK)):
+                show_message("Package has been registered successfully!", "Done", True)
+                module.hide()    
+            else:
+                show_message("Can't register user, try again.", "Failed", False)
+import requests
+
+# Peticiones al servidor API 
+IP = "192.168.1.100"
+PORT = "8080"
+HTTP = "http://"
+OK = "200"
+
+##########################    LINKS  ######################################################
+#LOGIN
+ask_branches = HTTP + IP + ":" + PORT + "/ask_branches" #ask for branches 
+ask_types = HTTP + IP + ":" + PORT + "/ask_types" #Ask for packages types
+login_request = HTTP + IP + ":" + PORT + "/login" # login request
+
+#REGISTER
+register_request = HTTP + IP +":" + PORT + "/register" #register client request
+
+#CLIENT
+# --------------------------------- #
+
+#EMPLOYEE
+new_package_request = HTTP + IP +":" + PORT + "/new_package" #new package request
+delete_package_request = HTTP + IP +":" + PORT + "/package" #delete package request
+
+#MANAGER
+manager_request = HTTP + IP + ":" + PORT + "/manager" #consult amount branch manager and top 3 clients
+
+#ADMINISTRATOR
+admin_request = HTTP + IP +":" + PORT +  "/admin"  #consultas
+
+
+##########################    JSON PROTOCOL   ##############################################
+
+# Login Module
+login_json = {"username":"", "password":"", "id_branch":""}
+
+#Register Module
+register_json = {"name":"", "lname":"", "id":"","username":"",
+                "telephone":"","type":"","province":"", "password":""}
+
+#Client Module 
+#    ------------------------------------------   #
+
+#Employee Module 
+delete_package_json = {"id_package":""} ####################
+new_package_json = {"id":"", "reception_date":"","category":"","type":"","description":"",
+                    "weight":"", "value":"", "branch":2}
+
+#Manager Module
+raised_money_json = {"operation":"","branch":"","date_min":"", "date_max":""}
+
+#Admin Module
+admin_json = {"operation":"","branch":"", "date_min":"", "date_max":"", "type":""}
+
+
+
+##########################    REQUEST FUNCTION   ##############################################
+
+def send_request(plink, pdata, isPost):
+    if (isPost):
+        _response = requests.post(plink, json = pdata)
+    else:
+        _response = requests.get(plink)
+    received_data = _response.json()
+    return received_data
+from sql_connection import *
+
+def get_types():
+    types = []
+    query = "SELECT pt_name FROM PACKAGE_TYPE"
+    content = new_query(query).fetchall()
+    for i in content:
+        types += [i[0]]
+    return str(types)
+
+from tools import *
+from database_items import *
+from sql_connection import *
+
+def get_province_by_id( p_id ):
+    province = 0
+    query_province = "SELECT * FROM PROVINCE WHERE p_id='"+str(p_id)+"'"
+    database_info = new_query( query_province )
+    content = database_info.fetchall()
+    if( len_database_info( content ) == 1 ):
+        province = parse_province(  content[0][0],
+                                    content[0][1])
+    return province
+
+
+def get_client_type_by_id( ct_id ):
+    client_type = 0
+    query_client_type = "SELECT * FROM CLIENT_TYPE WHERE ct_id='"+str(ct_id)+"'"
+    database_info = new_query( query_client_type )
+    content = database_info.fetchall()
+    if( len_database_info( content ) == 1 ):
+        client_type = parse_client_type(    content[0][0],
+                                            content[0][1])
+    return client_type
+
+
+import database_items
+import info_model
+import login_controller
+import sql_connection
+import tools
+import users_model
+from PyQt4 import QtCore, QtGui
+import ast
+import sys, os
+from http_service import *
+from messages import *
+sys.path.insert(0, os.getcwd() + "/ui")
+from register_module import *
+from client_module import *
+from employee_module1 import *
+from employee_module2 import *
+from manager_module import *
+from admin_module import *
+from data_manager import *
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+###########################   Window Login Class  ###################################
+
+class Ui_Login(QtGui.QWidget):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+        self.setupUi(self)
+
+    def setupUi(self, Login):
+        Login.setObjectName(_fromUtf8("Login"))
+        Login.setFixedSize(546, 235)
+        Login.move(400, 200) 
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setBold(True)
+        font.setWeight(75)
+        Login.setFont(font)
+        self.user_data = QtGui.QLineEdit(Login)
+        self.user_data.setGeometry(QtCore.QRect(340, 30, 191, 33))
+        self.user_data.setObjectName(_fromUtf8("user_data"))
+        self.password_data = QtGui.QLineEdit(Login)
+        self.password_data.setGeometry(QtCore.QRect(340, 80, 191, 33))
+        self.password_data.setObjectName(_fromUtf8("password_data"))
+        self.password_data.setEchoMode(QtGui.QLineEdit.Password)
+        self.login_button = QtGui.QPushButton(Login)
+        self.login_button.setGeometry(QtCore.QRect(340, 140, 90, 35))
+        self.login_button.setObjectName(_fromUtf8("login_button"))
+        self.register_button = QtGui.QPushButton(Login)
+        self.register_button.setGeometry(QtCore.QRect(440, 140, 90, 35))
+        self.register_button.setObjectName(_fromUtf8("register_button"))
+        self.quit_button = QtGui.QPushButton(Login)
+        self.quit_button.setGeometry(QtCore.QRect(340, 190, 90, 35))
+        self.quit_button.setObjectName(_fromUtf8("quit_button"))
+        self.label_username = QtGui.QLabel(Login)
+        self.label_username.setGeometry(QtCore.QRect(260, 30, 71, 31))
+        self.label_username.setObjectName(_fromUtf8("label_username"))
+        self.label_password = QtGui.QLabel(Login)
+        self.label_password.setGeometry(QtCore.QRect(260, 80, 71, 31))
+        self.label_password.setObjectName(_fromUtf8("label_password"))
+        self.label_ubication = QtGui.QLabel(Login)
+        self.label_ubication.setGeometry(QtCore.QRect(20, 10, 71, 31))
+        self.label_ubication.setObjectName(_fromUtf8("label_ubication"))
+        self.label_logo = QtGui.QLabel(Login)
+        self.label_logo.setGeometry(QtCore.QRect(40, 60, 211, 141))
+        self.label_logo.setText(_fromUtf8(""))
+        self.label_logo.setPixmap(QtGui.QPixmap(_fromUtf8("images/logo.png")))
+        self.label_logo.setObjectName(_fromUtf8("label_logo"))
+        self.retranslateUi(Login)
+        QtCore.QMetaObject.connectSlotsByName(Login)
+        self.setWindowIcon(QtGui.QIcon('images/logo.png'))
+        self.province = QtGui.QComboBox(Login)
+        self.province.setGeometry(QtCore.QRect(100, 10, 113, 33))
+        self.province.setObjectName(_fromUtf8("province"))
+        self.types = None
+
+        #Ask for branches 
+        branches = send_request(ask_branches, None, False)
+        if (branches["status"] == int(OK)):
+            for i in range (len(branches["data"])):
+                provinces.append( branches["data"][i]["ubication"] )
+            fill_boxes(self.province, provinces)
+        else: 
+            show_message("Server out of service", "Error", False)
+
+        types = send_request(ask_types, None, False)  
+        if (types["status"] == int(OK)):
+            self.types = types["data"]
+            self.types = ast.literal_eval(self.types)   
+        else: 
+            show_message("Server out of service", "Error", False)
+
+
+    def retranslateUi(self, Login):
+        Login.setWindowTitle(_translate("Login", "CourierTEC Platform System", None))
+        self.login_button.setText(_translate("Login", "Login", None))
+        self.register_button.setText(_translate("Login", "Register", None))
+        self.quit_button.setText(_translate("Login", "Quit", None))
+        self.label_username.setText(_translate("Login", "Username:", None))
+        self.label_password.setText(_translate("Login", "Password:", None))
+        self.label_ubication.setText(_translate("Login", "Ubication:", None))
+        self.login_button.clicked.connect(lambda: self.send_login_request(Login))
+        self.register_button.clicked.connect(self.open_register_module)
+        self.quit_button.clicked.connect(Login.close)
+
+    
+    # Check the user's credentials & show new window 
+    # according with the user type 
+    def send_login_request(self, module):
+        if (self.user_data.text().isEmpty() or self.password_data.text().isEmpty()):
+            show_message("Please insert the required information", "Warning", False)
+        else:
+            #Send login request to server API
+            login_json["username"] = str(self.user_data.text())
+            login_json["password"] = str(self.password_data.text())
+            login_json["id_branch"] = self.get_id_branch(self.province.currentText()) 
+            login_response = send_request(login_request, login_json, True) 
+            if (login_response["status"] == ERROR):
+                show_message("User doesn't exist, try again...", "Alert", False)
+            elif (login_response["status"] == CLIENT): #client
+               #Open client session
+               self.open_module(module, Ui_ClientModule(), "client", login_response) 
+            elif (login_response["status"] == WORKER): #worker
+                if (login_response["data"]["type"] == "Gerente"):
+                    self.open_module(module, Ui_ManagerModule(), "manager", login_response)
+                elif (login_response["data"]["type"] == "Administrador"):
+                    self.open_module(module, Ui_AdminModule(), "admin", login_response)
+                elif (login_response["data"]["type"] == "Empleado"):
+                    self.open_module(module, Ui_EmployeeModule1(), "employee", login_response)
+
+    def get_id_branch(self, pname):
+        if (pname == "Heredia"):
+            return 1
+        elif (pname == "Cartago"):
+            return 3
+        else: 
+            return 2
+    
+    # Open register window module if the user 
+    # wants to be part of the platform
+    def open_register_module(self):
+        self.window = QtGui.QMainWindow()
+        self.ui = Ui_RegisterClient()
+        self.ui.setupUi(self.window)
+        self.window.show()
+
+    def open_module(self, login, module, type, pdata):
+        self.window = QtGui.QMainWindow()
+        self.ui = module
+        self.ui.setupUi(self.window)
+        if (type == "client"):
+            self.ui.set_client_data(pdata["data"]["name"] + " " + pdata["data"]["lname"] , pdata["branch"]["type"],
+                                     pdata["branch"]["ubication"], pdata["branch"]["telephone"], pdata["branch"]["email"] ) 
+            self.ui.fill_client_table( pdata["packages"])
+
+        elif (type == "employee"):
+            self.ui.set_employee_data(pdata["data"]["name"], pdata["data"]["lname"], pdata["data"]["id"])
+            self.ui.fill_employee_table( pdata["packages"] )
+            self.ui.set_types(self.types)
+
+        elif (type == "manager"):
+            self.ui.set_manager_data(pdata["data"]["name"], pdata["data"]["lname"], pdata["data"]["type"])
+
+        elif (type == "admin"):
+            self.ui.set_admin_data(pdata["data"]["name"], pdata["data"]["lname"], pdata["data"]["type"])
+            self.ui.set_types(self.types)
+
+
+        self.ui.set_tmp_login(login)
+        self.window.show()
+        self.hide()
+
+        
+###########################   Window Login Init  #####################################
+
+
+ #   Init frontend application
+def main():
+    app = QtGui.QApplication(sys.argv)
+    login_window = Ui_Login()
+    login_window.show()
+    sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()
+
+
+from users_model import *
+from info_model import *
+
+def user_login( p_username, p_password):
+    user_client = get_client_by_username( p_username )
+    user_worker = get_worker_by_username( p_username )
+    if( user_client != 0 and user_client['password'] == p_password ):
+        return create_login_response( user_client, "client" )
+    elif( user_worker != 0 and user_worker['password'] == p_password ):
+        return create_login_response( user_worker, "worker" )
+    else:
+        return create_login_response( None, "failed" )
+
+def create_login_response( p_user, p_type ):
+    secure_user = "Username or password incorrect!"
+    status = 404
+    if( p_type == "client" ):
+        client_province = get_province_by_id( p_user['province'] )
+        client_type = get_client_type_by_id( p_user['type'] )
+        secure_user = {
+            'id' : p_user['id'],
+            'account' : p_user['account'],
+            'name' : p_user['name'],
+            'lname' : p_user['lname'],
+            'telephone' : p_user['telephone'],
+            'type' : client_type['name'],
+            'province' : client_province['name']    
+        }
+        status = 100        
+    elif( p_type == "worker" ):
+        worker_job = get_worker_job_by_id( p_user['id'] )
+        secure_user = {
+            'id' : p_user['id'],
+            'name' : p_user['name'],
+            'lname' : p_user['lname'],
+            'telephone' : p_user['telephone'],
+            'type' : worker_job
+        }
+        status = 101
+    return send_response( status, secure_user )
+
+def send_response( p_status, p_data ):
+    response = {"status":p_status,"data":p_data}
+    return response
+from tools import *
+from database_items import *
+from sql_connection import *
+
+def get_total_manager( p_id_branch, p_date_min, p_date_max ):
+    query = ("EXEC branchAmount '"+p_id_branch+"', '"+p_date_min+"', '"+p_date_max+"'")
+    content = new_query( query ).fetchall()[0][0]
+    return content
+
+def get_3_top_clients( p_date_min, p_date_max ):
+    clients = []
+    query = ("EXEC bestClients '"+p_date_min+"', '"+p_date_max+"'")
+    content = new_query( query ).fetchall()
+    for i in content:
+        clients += [ {"total":i[0], "name":i[1], "lname":i[2]} ]
+    return str(clients)
+
+# -*- coding: utf-8 -*-
+
+from PyQt4 import QtCore, QtGui
+from http_service import *
+from data_manager import *
+from messages import *
+
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+
+###########################   Window Manager Class  ###################################
+
+class Ui_ManagerModule(object):
+    def setupUi(self, ManagerModule):
+        ManagerModule.setObjectName(_fromUtf8("ManagerModule"))
+        ManagerModule.setFixedSize(917, 479)
+        self.label_branch = QtGui.QLabel(ManagerModule)
+        self.label_branch.setGeometry(QtCore.QRect(30, 100, 71, 31))
+        ManagerModule.move(200, 100)
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_branch.setFont(font)
+        self.label_branch.setObjectName(_fromUtf8("label_branch"))
+        self.branch_data = QtGui.QComboBox(ManagerModule)
+        self.branch_data.setGeometry(QtCore.QRect(100, 100, 83, 33))
+        self.branch_data.setObjectName(_fromUtf8("branch_data"))
+        self.start_date = QtGui.QDateEdit(ManagerModule)
+        self.start_date.setGeometry(QtCore.QRect(330, 100, 110, 33))
+        self.start_date.setObjectName(_fromUtf8("start_date"))
+        self.final_date = QtGui.QDateEdit(ManagerModule)
+        self.final_date.setGeometry(QtCore.QRect(580, 100, 110, 33))
+        self.final_date.setObjectName(_fromUtf8("final_date"))
+        self.label_start = QtGui.QLabel(ManagerModule)
+        self.label_start.setGeometry(QtCore.QRect(220, 100, 91, 31))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_start.setFont(font)
+        self.label_start.setObjectName(_fromUtf8("label_start"))
+        self.label_finsl = QtGui.QLabel(ManagerModule)
+        self.label_finsl.setGeometry(QtCore.QRect(470, 100, 101, 31))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_finsl.setFont(font)
+        self.label_finsl.setObjectName(_fromUtf8("label_finsl"))
+        self.consult_amount_button = QtGui.QPushButton(ManagerModule)
+        self.consult_amount_button.setGeometry(QtCore.QRect(520, 170, 171, 41))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.consult_amount_button.setFont(font)
+        self.consult_amount_button.setObjectName(_fromUtf8("consult_amount_button"))
+        self.amount_data = QtGui.QLineEdit(ManagerModule)
+        self.amount_data.setGeometry(QtCore.QRect(330, 170, 141, 41))
+        self.amount_data.setObjectName(_fromUtf8("amount_data"))
+        self.label_4 = QtGui.QLabel(ManagerModule)
+        self.label_4.setGeometry(QtCore.QRect(30, 40, 241, 61))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Noto Serif Myanmar"))
+        font.setPointSize(18)
+        font.setBold(True)
+        font.setItalic(False)
+        font.setWeight(75)
+        self.label_4.setFont(font)
+        self.label_4.setObjectName(_fromUtf8("label_4"))
+        self.label_5 = QtGui.QLabel(ManagerModule)
+        self.label_5.setGeometry(QtCore.QRect(40, 250, 191, 51))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Noto Serif Myanmar"))
+        font.setPointSize(18)
+        font.setBold(True)
+        font.setItalic(False)
+        font.setWeight(75)
+        self.label_5.setFont(font)
+        self.label_5.setObjectName(_fromUtf8("label_5"))
+        self.logout_button = QtGui.QPushButton(ManagerModule)
+        self.logout_button.setGeometry(QtCore.QRect(790, 30, 101, 41))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.logout_button.setFont(font)
+        self.logout_button.setObjectName(_fromUtf8("logout_button"))
+        self.top3_table = QtGui.QTableWidget(ManagerModule)
+        self.top3_table.setGeometry(QtCore.QRect(30, 290, 651, 101))
+        self.top3_table.setObjectName(_fromUtf8("top3_table"))
+        self.top3_table.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.top3_table.setDragDropOverwriteMode(False)
+        self.top3_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.top3_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.top3_table.setWordWrap(False)
+        self.top3_table.setSortingEnabled(False)
+        self.top3_table.setColumnCount(TOP3_COLS)
+        self.top3_table.setRowCount(0)
+        self.top3_table.horizontalHeader().setDefaultAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter|
+                                                          QtCore.Qt.AlignCenter)
+        self.top3_table.horizontalHeader().setHighlightSections(False)
+        self.top3_table.horizontalHeader().setStretchLastSection(True)
+        self.top3_table.verticalHeader().setVisible(False)
+        self.top3_table.setAlternatingRowColors(True)
+        self.top3_table.verticalHeader().setDefaultSectionSize(20)
+        self.top3_table.setHorizontalHeaderLabels(top3_columns)            
+        for i, width in enumerate((130, 290), start=0):
+            self.top3_table.setColumnWidth(i, width)
+
+
+        self.label_logo = QtGui.QLabel(ManagerModule)
+        self.label_logo.setGeometry(QtCore.QRect(760, 300, 131, 161))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_logo.setFont(font)
+        self.label_logo.setText(_fromUtf8(""))
+        self.label_logo.setPixmap(QtGui.QPixmap(_fromUtf8("images/manager.png")))
+        self.label_logo.setObjectName(_fromUtf8("label_logo"))
+        self.consult_top3_button = QtGui.QPushButton(ManagerModule)
+        self.consult_top3_button.setGeometry(QtCore.QRect(30, 400, 121, 41))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.consult_top3_button.setFont(font)
+        self.consult_top3_button.setObjectName(_fromUtf8("consult_top3_button"))
+        self.label_info1 = QtGui.QLabel(ManagerModule)
+        self.label_info1.setGeometry(QtCore.QRect(760, 120, 141, 31))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_info1.setFont(font)
+        self.label_info1.setObjectName(_fromUtf8("label_info1"))
+        self.label_info2 = QtGui.QLabel(ManagerModule)
+        self.label_info2.setGeometry(QtCore.QRect(760, 160, 190, 31))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_info2.setFont(font)
+        self.label_info2.setObjectName(_fromUtf8("label_info2"))
+        self.label_info3 = QtGui.QLabel(ManagerModule)
+        self.label_info3.setGeometry(QtCore.QRect(760, 200, 131, 31))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.label_info3.setFont(font)
+        self.label_info3.setObjectName(_fromUtf8("label_info3"))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        font.setPointSize(14)
+        self.retranslateUi(ManagerModule)
+        QtCore.QMetaObject.connectSlotsByName(ManagerModule)
+        self.login_tmp = None
+        self.amount_data.setReadOnly(True)
+        fill_boxes(self.branch_data, provinces)
+
+    def retranslateUi(self, ManagerModule):
+        ManagerModule.setWindowTitle(_translate("ManagerModule", "CourierTEC - Manager Session", None))
+        self.label_branch.setText(_translate("ManagerModule", "Branch:", None))
+        self.label_start.setText(_translate("ManagerModule", "Start Date:", None))
+        self.label_finsl.setText(_translate("ManagerModule", "Final Date:", None))
+        self.consult_amount_button.setText(_translate("ManagerModule", "Consult ", None))
+        self.label_4.setText(_translate("ManagerModule", "Branch\'s Amount", None))
+        self.label_5.setText(_translate("ManagerModule", "Top 3 Clients", None))
+        self.logout_button.setText(_translate("ManagerModule", "Log Out", None))
+        self.consult_top3_button.setText(_translate("ManagerModule", "Consult", None))
+        self.label_info1.setText(_translate("ManagerModule", "Info Manager 1", None))
+        self.label_info2.setText(_translate("ManagerModule", "Info Manager 2", None))
+        self.label_info3.setText(_translate("ManagerModule", "Info Manager 3", None))
+        self.logout_button.clicked.connect(lambda: self.logout_action(ManagerModule))
+        self.consult_amount_button.clicked.connect(lambda: self.consult_manager(1) )
+        self.consult_top3_button.clicked.connect(lambda: self.consult_manager(2) )
+
+    #Consult the amount of some type of package in some branch within an 
+    # specific date range
+    def consult_manager(self, poperation):
+        # make json with data 
+        manager_json["date_min"] = serialize_date( self.start_date.text(), "/", "-" )
+        manager_json["date_max"] = serialize_date( self.final_date.text(), "/", "-" )
+        manager_json["operation"] = poperation
+        manager_json["branch"] = unicode(self.branch_data.currentText())
+        
+        # http request 
+        response = send_request(manager_request, manager_json, True)
+
+        if (response["status"] == int(OK) ):
+            if (poperation == 1):
+                self.amount_data.setText( str(response["data"]) )
+            elif (poperation == 2):    # Consult top 3 clients according to the amount by each one 
+                serialize_table(response["data"], ["name","lname","total"], TOP3_COLS, top3_clients)
+                fill_table(self.top3_table, top3_clients, TOP3_COLS)
+        else:
+            show_message("Couldn't consult","Alert",False)
+        
+    # Sign out 
+    def logout_action(self, module):
+        module.hide()
+        self.login_tmp.show()
+
+    #Set manager information
+    def set_manager_data(self, pname, plname, ptype):
+        self.label_info1.setText("Name: " + pname)
+        self.label_info2.setText(plname)
+        self.label_info3.setText(ptype)
+
+    # Helps closing the login window and starts session
+    def set_tmp_login(self, module):
+        self.login_tmp = module
+
+from PyQt4 import QtGui
+
+# Show warning/info message to prevent 
+# something wrong with the app
+def show_message(pmessage, ptitle, isInfo):
+    msg_box = QtGui.QMessageBox()
+    if (isInfo):
+        msg_box.setIcon(QtGui.QMessageBox.Information)
+    else:
+        msg_box.setIcon(QtGui.QMessageBox.Warning)
+    msg_box.setText(pmessage)
+    msg_box.setWindowTitle(ptitle)
+    msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
+    msg_box.exec_()
+
+# Show question message to decide the program flux
+def question_message(pself, ptitle, pmsg):
+    msg_box = QtGui.QMessageBox()
+    return msg_box.question(pself, ptitle, pmsg, msg_box.Yes | msg_box.No)
+    
+    
+from packages_model import *
+
+def get_packages( p_id_client, p_id_branch ):
+    packages_list = get_packages_by_id_client( p_id_client, p_id_branch )
+    
+
+def make_response( p_status, p_data ):
+    return 0
+
+from tools import *
+from database_items import *
+from sql_connection import *
+
+def get_packages_by_id_client( p_id_client, p_id_branch ):
+    client_packages = []
+    query_packages_client = (   "select A2.p_id, A2.p_reception_date, A2.pt_name, c.ca_name, A2.p_weight, A2.pb_delivery_date, A2.pb_total "
+                                " from CATEGORY as c "
+                                " inner join "
+                                " ( select * "
+	                            " from PACKAGE_TYPE as pt "
+	                            " inner join ( select p.p_id, p.p_reception_date, p.p_weight, pb.pb_delivery_date, pb.pb_total, p.p_type, pb.pb_id_client "
+		                        " from PACKAGE_BRANCH as pb "
+		                        " inner join PACKAGE as p "
+		                        " on pb.pb_id_package=p.p_id "
+		                        " where pb.pb_id_branch="+str(p_id_branch)+" "
+	                            " ) as A1 "
+	                            " on pt.pt_id=A1.p_type "
+                                " ) as A2 "
+                                " on c.ca_id=A2.pt_category "
+                                " where A2.pb_id_client='"+p_id_client+"'"
+                            )
+    database_info = new_query( query_packages_client )
+    content_packages = database_info.fetchall()
+    for single_pkg in content_packages: 
+        client_packages += [parse_package_client(   single_pkg[0],
+                                                    single_pkg[1],
+                                                    single_pkg[2],
+                                                    single_pkg[3],
+                                                    single_pkg[4],
+                                                    single_pkg[5],
+                                                    single_pkg[6]   )]
+    return str(client_packages)
+
+
+def get_packages_by_branch( p_id_branch ):
+    branch_packages = []
+    query_packages = (   "select A3.pb_id_package, A3.pb_id_client, A3.c_name, A3.c_lname, A3.p_reception_date, A3.pb_delivery_date, A3.p_weight, A3.p_value, A3.pb_total, A3.pt_name, ca.ca_name "
+                                "from CATEGORY as ca "
+                                " inner join "
+                                " ( "
+                                    " select * "
+                                    " from PACKAGE_TYPE as pt "
+                                    " inner join "
+                                    " ( "
+                                        " select A1.pb_total, A1.pb_delivery_date, A1.pb_id_package, A1.pb_id_client, A1.c_name, A1.c_lname, p.p_type, p_value, p_weight, p.p_reception_date "
+                                        " from PACKAGE as p "
+                                        " inner join "
+                                        " ( "
+                                            " select pb.pb_total, pb.pb_delivery_date, pb.pb_id_package, pb.pb_id_client, c.c_name, c.c_lname, c.c_id "
+                                            " from PACKAGE_BRANCH as pb "
+                                            " inner join CLIENT as c "
+                                            " on c.c_id=pb.pb_id_client "
+                                            " where pb.pb_id_branch="+str(p_id_branch)+
+                                        " ) as A1 "
+                                    " on p.p_id=A1.pb_id_package "
+                                    " ) as A2 "
+                                " on A2.p_type=pt.pt_id "
+                                " ) as A3 "
+                                " on A3.pt_category=ca.ca_id "
+                            )
+    database_info = new_query( query_packages )
+    content_packages = database_info.fetchall()
+    for single_pkg in content_packages: 
+        branch_packages += [parse_packages_branch(   single_pkg[0],
+                                                    single_pkg[1],
+                                                    single_pkg[2],
+                                                    single_pkg[3],
+                                                    single_pkg[4],
+                                                    single_pkg[5],
+                                                    single_pkg[6],
+                                                    single_pkg[7],
+                                                    single_pkg[8],
+                                                    single_pkg[9],
+                                                    single_pkg[10]   )]
+    return str(branch_packages)
+from sql_connection import *
+
+def create_user(    p_id,
+                    p_name,
+                    p_lname,
+                    p_telephone,
+                    p_username,
+                    p_password,
+                    p_type,
+                    p_province ):
+    query = (   " INSERT INTO CLIENT VALUES "
+                " ('"+p_id+"', "
+                " '"+p_name+"', "
+                " '"+p_lname+"', "
+                " '"+p_telephone+"', "
+                " '"+p_username+"', "
+                " '"+p_password+"', "
+                " '"+str(p_type)+"', "
+                " '"+str(p_province)+"', " 
+                " NEWID() )" )
+    new_query( query )
+    commit_changes()
+    return {"status":200}
+
+def update_package( p_id, p_date ):
+    query = (   "UPDATE PACKAGE_BRANCH "
+                " SET pb_delivery_date='"+p_date+"' "
+                " WHERE pb_id_package='"+str(p_id)+"'" )
+    new_query( query )
+    commit_changes()
+    return {"status":200}
+
+def new_package(    p_id_client,
+                    p_reception_date,
+                    p_type,
+                    p_weight,
+                    p_description,
+                    p_value,
+                    p_branch ):
+    id_category = get_id_type_by_name( p_type )
+    query = (   "INSERT INTO PACKAGE VALUES "
+                "( '"+p_reception_date+"',"
+                " "+str(p_value)+", "
+                " "+str(p_weight)+", "
+                " "+str(id_category)+", "
+                " NEWID() )" )
+    new_query( query )
+    query = "SELECT TOP 1 p_id FROM PACKAGE ORDER BY p_id DESC"
+    id_package = new_query( query ).fetchall()[0][0]
+    query = ("SELECT pt_price_kg FROM PACKAGE_TYPE WHERE pt_id="+str(id_category))
+    price = new_query( query ).fetchall()[0][0]
+    total = price * p_weight
+    query = (   "INSERT INTO PACKAGE_BRANCH VALUES "
+                " ("+str(total)+", NULL, "+str(id_package)+", '"+p_id_client+"', "
+                " "+str(p_branch)+", NEWID() )" )
+    new_query( query )
+    commit_changes()
+    return {"status":200}
+
+def get_id_type_by_name( p_type ):
+    query = ("SELECT pt_id FROM PACKAGE_TYPE WHERE pt_name='"+p_type+"'")
+    content = new_query( query ).fetchall()[0][0]
+    return content
+# -*- coding: utf-8 -*-
+
+from PyQt4 import QtCore, QtGui
+from http_service import *
+from messages import *
+from data_manager import *
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+
+###########################   Window Register Class  ###################################
+
+
+class Ui_RegisterClient(QtGui.QWidget):
+
+    def setupUi(self, RegisterClient):
+        RegisterClient.setObjectName(_fromUtf8("RegisterClient"))
+        RegisterClient.setFixedSize(446, 282)
+        RegisterClient.move(400, 200)
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu"))
+        RegisterClient.setFont(font)
+        self.register_button = QtGui.QPushButton(RegisterClient)
+        self.register_button.setGeometry(QtCore.QRect(250, 210, 151, 35))
+        self.register_button.setObjectName(_fromUtf8("register_button"))
+        self.name_data = QtGui.QLineEdit(RegisterClient)
+        self.name_data.setGeometry(QtCore.QRect(110, 30, 113, 33))
+        self.name_data.setText(_fromUtf8(""))
+        self.name_data.setObjectName(_fromUtf8("name_data"))
+        self.lname_data = QtGui.QLineEdit(RegisterClient)
+        self.lname_data.setGeometry(QtCore.QRect(110, 60, 113, 33))
+        self.lname_data.setText(_fromUtf8(""))
+        self.lname_data.setObjectName(_fromUtf8("lname_data"))
+        self.id_data = QtGui.QLineEdit(RegisterClient)
+        self.id_data.setGeometry(QtCore.QRect(110, 90, 113, 33))
+        self.id_data.setText(_fromUtf8(""))
+        self.id_data.setObjectName(_fromUtf8("id_data"))
+        self.account_data = QtGui.QLineEdit(RegisterClient)
+        self.account_data.setGeometry(QtCore.QRect(110, 120, 113, 33))
+        self.account_data.setText(_fromUtf8(""))
+        self.account_data.setObjectName(_fromUtf8("account_data"))
+        self.tel_data = QtGui.QLineEdit(RegisterClient)
+        self.tel_data.setGeometry(QtCore.QRect(110, 150, 113, 33))
+        self.tel_data.setText(_fromUtf8(""))
+        self.tel_data.setObjectName(_fromUtf8("tel_data"))
+        self.type_data = QtGui.QComboBox(RegisterClient)
+        self.type_data.setGeometry(QtCore.QRect(110, 180, 113, 33))
+        self.type_data.setObjectName(_fromUtf8("type_data"))
+        fill_boxes(self.type_data, type_client_data)
+               
+        self.prov_data = QtGui.QComboBox(RegisterClient)
+        self.prov_data.setGeometry(QtCore.QRect(110, 210, 113, 33))
+        self.prov_data.setObjectName(_fromUtf8("prov_data"))
+        fill_boxes(self.prov_data, total_provinces)
+
+        self.password_data = QtGui.QLineEdit(RegisterClient)
+        self.password_data.setGeometry(QtCore.QRect(110, 240, 113, 33))
+        self.password_data.setObjectName(_fromUtf8("password_data"))
+        self.password_data.setEchoMode(QtGui.QLineEdit.Password)
+        self.label_name = QtGui.QLabel(RegisterClient)
+        self.label_name.setGeometry(QtCore.QRect(30, 40, 60, 19))
+        self.label_name.setObjectName(_fromUtf8("label_name"))
+        self.label_lastname = QtGui.QLabel(RegisterClient)
+        self.label_lastname.setGeometry(QtCore.QRect(30, 70, 71, 19))
+        self.label_lastname.setObjectName(_fromUtf8("label_lastname"))
+        self.label_id = QtGui.QLabel(RegisterClient)
+        self.label_id.setGeometry(QtCore.QRect(30, 100, 60, 19))
+        self.label_id.setObjectName(_fromUtf8("label_id"))
+        self.label_account = QtGui.QLabel(RegisterClient)
+        self.label_account.setGeometry(QtCore.QRect(30, 130, 71, 19))
+        self.label_account.setObjectName(_fromUtf8("label_account"))
+        self.label_tel = QtGui.QLabel(RegisterClient)
+        self.label_tel.setGeometry(QtCore.QRect(30, 160, 71, 20))
+        self.label_tel.setObjectName(_fromUtf8("label_tel"))
+        self.label_type = QtGui.QLabel(RegisterClient)
+        self.label_type.setGeometry(QtCore.QRect(30, 190, 71, 20))
+        self.label_type.setObjectName(_fromUtf8("label_type"))
+        self.label_prov = QtGui.QLabel(RegisterClient)
+        self.label_prov.setGeometry(QtCore.QRect(30, 220, 61, 20))
+        self.label_prov.setObjectName(_fromUtf8("label_prov"))
+        self.label_pass = QtGui.QLabel(RegisterClient)
+        self.label_pass.setGeometry(QtCore.QRect(30, 250, 61, 20))
+        self.label_pass.setObjectName(_fromUtf8("label_pass"))
+        self.label_img = QtGui.QLabel(RegisterClient)
+        self.label_img.setGeometry(QtCore.QRect(270, 50, 101, 111))
+        self.label_img.setText(_fromUtf8(""))
+        self.label_img.setPixmap(QtGui.QPixmap(_fromUtf8("images/info.png")))
+        self.label_img.setObjectName(_fromUtf8("label_img"))
+        self.retranslateUi(RegisterClient)
+        QtCore.QMetaObject.connectSlotsByName(RegisterClient)
+        RegisterClient.setWindowIcon(QtGui.QIcon('logo.png'))
+
+    def retranslateUi(self, RegisterClient):
+        RegisterClient.setWindowTitle(_translate("RegisterClient", "CourierTEC - Register Client", None))
+        self.register_button.setText(_translate("RegisterClient", "Register as a Client", None))
+        self.label_name.setText(_translate("RegisterClient", "Name:", None))
+        self.label_lastname.setText(_translate("RegisterClient", "Last Name:", None))
+        self.label_id.setText(_translate("RegisterClient", "ID:", None))
+        self.label_account.setText(_translate("RegisterClient", "Username:", None))
+        self.label_tel.setText(_translate("RegisterClient", "Telephone:", None))
+        self.label_type.setText(_translate("RegisterClient", "Client Type:", None))
+        self.label_prov.setText(_translate("RegisterClient", "Province:", None))
+        self.label_pass.setText(_translate("RegisterClient", "Password:", None))
+        self.register_button.clicked.connect(lambda: self.send_register_request(RegisterClient))
+
+    # Make register json 
+    def set_register_json(self):
+        register_json["name"] = unicode(self.name_data.text())
+        register_json["lname"] = unicode(self.lname_data.text())
+        register_json["id"] = str(self.id_data.text())
+        register_json["username"] = unicode(self.account_data.text())
+        register_json["telephone"] = str(self.tel_data.text())
+        register_json["type"] = self.get_id_type(str(self.type_data.currentText()))
+        register_json["province"] = self.get_id_province( unicode(self.prov_data.currentText()) )
+        register_json["password"] = unicode(self.password_data.text())   
+        print register_json
+        
+
+
+    def get_id_type(self, ptype):
+        if (ptype == "Platinum"):
+            return 1
+        elif (ptype == "Gold"):
+            return 2
+        elif (ptype == "Bronze"):
+            return 3
+
+    def get_id_province(self, pprovince):
+        if ((pprovince) == (u'San JosÃ©')):
+            return 1
+        elif (pprovince == u'Alajuela'):
+            return 2
+        elif (pprovince == u'Cartago'):
+            return 3
+        elif (pprovince == u'Heredia'):
+            return 4
+        elif (pprovince == u'Guanacaste'):
+            return 5
+        elif (pprovince == u'Puntarenas'):
+            return 6
+        elif (pprovince == (u'LimÃ³n')):
+            return 7
+
+
+    # Send register client to database in order to store new client information
+    def send_register_request(self, module):
+        if (self.name_data.text().isEmpty() or self.lname_data.text().isEmpty() or self.id_data.text().isEmpty() or
+            self.account_data.text().isEmpty() or self.tel_data.text().isEmpty() or self.password_data.text().isEmpty()):
+            show_message("Please insert the required information", "Warning", False)
+        else:
+            #Send register request to server API
+            self.set_register_json()
+            register_response = send_request(register_request, register_json, True) 
+            if (register_response["status"] == int(OK)):
+                show_message("User has been registered successfully!", "Done", True)
+                module.hide()  
+            else:
+                show_message("Can't register user, try again.", "Failed", False)
+           
+import pyodbc
+
+sql_connection = pyodbc.connect(    'Driver={SQL SERVER};'
+                                    'Server=CAR-GRMHUASTO\FABSQL;'
+                                    'Database=COURIERTEC_HEREDIA;'  
+                                    'Trusted_Connection=yes;')
+
+database_pointer = sql_connection.cursor()
+
+def new_query( str_query ):
+    database_pointer.execute( str_query )
+    return database_pointer
+
+def commit_changes():
+    sql_connection.commit()
+    return 0
+def len_database_info( database_info ):
+    counter = 0
+    for row in database_info:
+        row = row
+        counter += 1
+    return counter
+
+from tools import *
+from database_items import *
+from sql_connection import *
+
+def get_client_by_username( p_username ):
+    client = 0
+    query_client = "SELECT * FROM CLIENT WHERE c_username='"+p_username+"'"
+    database_info_client = new_query( query_client )
+    content_client = database_info_client.fetchall()
+    if( len_database_info( content_client ) == 1 ):
+        client = parse_client(  content_client[0][0],
+                                content_client[0][1],
+                                content_client[0][2],
+                                content_client[0][3],
+                                content_client[0][4],
+                                content_client[0][5],
+                                content_client[0][6],
+                                content_client[0][7],
+                                content_client[0][8] )
+    return client
+
+def get_worker_by_username( p_username ):
+    worker = 0
+    query_worker = "SELECT * FROM WORKER WHERE w_username='"+p_username+"'"
+    database_info_worker = new_query( query_worker )
+    content_worker = database_info_worker.fetchall()
+    if( len_database_info( content_worker ) == 1 ):
+        worker = parse_worker(  content_worker[0][0],
+                                content_worker[0][1],
+                                content_worker[0][2],
+                                content_worker[0][3],
+                                content_worker[0][4],
+                                content_worker[0][5] )
+    return worker
+
+def get_worker_job_by_id( w_id ):
+    job = 0
+    query_worker_job = ("SELECT j.j_name FROM JOB as j "
+                        "INNER JOIN WORKS_ON as wo "
+                        "ON j.j_id=wo.wo_job "
+                        "WHERE wo.wo_worker='"+str(w_id)+"'")
+    database_info = new_query( query_worker_job )
+    content = database_info.fetchall()
+    if( len_database_info( content ) == 1 ):
+        job = content[0][0]
+    return job
+ÿþ/ * * * * * *   S c r i p t i n g   r e p l i c a t i o n   c o n f i g u r a t i o n .   S c r i p t   D a t e :   2 3 / 0 9 / 2 0 1 8   0 9 : 0 5 : 5 6   p . m .   * * * * * * /  
+ / * * * * * *   P l e a s e   N o t e :   F o r   s e c u r i t y   r e a s o n s ,   a l l   p a s s w o r d   p a r a m e t e r s   w e r e   s c r i p t e d   w i t h   e i t h e r   N U L L   o r   a n   e m p t y   s t r i n g .   * * * * * * /  
+  
+ / * * * * * *   I n s t a l l i n g   t h e   s e r v e r   a s   a   D i s t r i b u t o r .   S c r i p t   D a t e :   2 3 / 0 9 / 2 0 1 8   0 9 : 0 5 : 5 6   p . m .   * * * * * * /  
+ u s e   m a s t e r  
+ e x e c   s p _ a d d d i s t r i b u t o r   @ d i s t r i b u t o r   =   N ' C A R - G R M H U A S T O \ F A B S Q L ' ,   @ p a s s w o r d   =   N ' '  
+ G O  
+ e x e c   s p _ a d d d i s t r i b u t i o n d b   @ d a t a b a s e   =   N ' d i s t r i b u t i o n _ h e r e d i a ' ,   @ d a t a _ f o l d e r   =   N ' C : \ c o u r i e r T E C ' ,   @ l o g _ f o l d e r   =   N ' C : \ c o u r i e r T E C ' ,   @ l o g _ f i l e _ s i z e   =   2 ,   @ m i n _ d i s t r e t e n t i o n   =   0 ,   @ m a x _ d i s t r e t e n t i o n   =   7 2 ,   @ h i s t o r y _ r e t e n t i o n   =   4 8 ,   @ d e l e t e b a t c h s i z e _ x a c t   =   5 0 0 0 ,   @ d e l e t e b a t c h s i z e _ c m d   =   2 0 0 0 ,   @ s e c u r i t y _ m o d e   =   1  
+ G O  
+  
+ u s e   [ d i s t r i b u t i o n _ h e r e d i a ]    
+ i f   ( n o t   e x i s t s   ( s e l e c t   *   f r o m   s y s o b j e c t s   w h e r e   n a m e   =   ' U I P r o p e r t i e s '   a n d   t y p e   =   ' U   ' ) )    
+ 	 c r e a t e   t a b l e   U I P r o p e r t i e s ( i d   i n t )    
+ i f   ( e x i s t s   ( s e l e c t   *   f r o m   : : f n _ l i s t e x t e n d e d p r o p e r t y ( ' S n a p s h o t F o l d e r ' ,   ' u s e r ' ,   ' d b o ' ,   ' t a b l e ' ,   ' U I P r o p e r t i e s ' ,   n u l l ,   n u l l ) ) )    
+ 	 E X E C   s p _ u p d a t e e x t e n d e d p r o p e r t y   N ' S n a p s h o t F o l d e r ' ,   N ' C : \ c o u r i e r T E C ' ,   ' u s e r ' ,   d b o ,   ' t a b l e ' ,   ' U I P r o p e r t i e s '    
+ e l s e    
+ 	 E X E C   s p _ a d d e x t e n d e d p r o p e r t y   N ' S n a p s h o t F o l d e r ' ,   N ' C : \ c o u r i e r T E C ' ,   ' u s e r ' ,   d b o ,   ' t a b l e ' ,   ' U I P r o p e r t i e s '  
+ G O  
+  
+ e x e c   s p _ a d d d i s t p u b l i s h e r   @ p u b l i s h e r   =   N ' C A R - G R M H U A S T O \ F A B S Q L ' ,   @ d i s t r i b u t i o n _ d b   =   N ' d i s t r i b u t i o n _ h e r e d i a ' ,   @ s e c u r i t y _ m o d e   =   0 ,   @ l o g i n   =   N ' s a ' ,   @ p a s s w o r d   =   N ' ' ,   @ w o r k i n g _ d i r e c t o r y   =   N ' C : \ c o u r i e r T E C ' ,   @ t r u s t e d   =   N ' f a l s e ' ,   @ t h i r d p a r t y _ f l a g   =   0 ,   @ p u b l i s h e r _ t y p e   =   N ' M S S Q L S E R V E R '  
+ G O  
+ ÿþ- -   E n a b l i n g   t h e   r e p l i c a t i o n   d a t a b a s e  
+ u s e   m a s t e r  
+ e x e c   s p _ r e p l i c a t i o n d b o p t i o n   @ d b n a m e   =   N ' C O U R I E R T E C _ H E R E D I A ' ,   @ o p t n a m e   =   N ' m e r g e   p u b l i s h ' ,   @ v a l u e   =   N ' t r u e '  
+ G O  
+  
+ - -   A d d i n g   t h e   m e r g e   p u b l i c a t i o n  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e p u b l i c a t i o n   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ d e s c r i p t i o n   =   N ' M e r g e   p u b l i c a t i o n   o f   d a t a b a s e   ' ' C O U R I E R T E C _ H E R E D I A ' '   f r o m   P u b l i s h e r   ' ' C A R - G R M H U A S T O \ F A B S Q L ' ' . ' ,   @ s y n c _ m o d e   =   N ' n a t i v e ' ,   @ r e t e n t i o n   =   1 4 ,   @ a l l o w _ p u s h   =   N ' t r u e ' ,   @ a l l o w _ p u l l   =   N ' t r u e ' ,   @ a l l o w _ a n o n y m o u s   =   N ' t r u e ' ,   @ e n a b l e d _ f o r _ i n t e r n e t   =   N ' f a l s e ' ,   @ s n a p s h o t _ i n _ d e f a u l t f o l d e r   =   N ' t r u e ' ,   @ c o m p r e s s _ s n a p s h o t   =   N ' f a l s e ' ,   @ f t p _ p o r t   =   2 1 ,   @ f t p _ s u b d i r e c t o r y   =   N ' f t p ' ,   @ f t p _ l o g i n   =   N ' a n o n y m o u s ' ,   @ a l l o w _ s u b s c r i p t i o n _ c o p y   =   N ' f a l s e ' ,   @ a d d _ t o _ a c t i v e _ d i r e c t o r y   =   N ' f a l s e ' ,   @ d y n a m i c _ f i l t e r s   =   N ' f a l s e ' ,   @ c o n f l i c t _ r e t e n t i o n   =   1 4 ,   @ k e e p _ p a r t i t i o n _ c h a n g e s   =   N ' f a l s e ' ,   @ a l l o w _ s y n c t o a l t e r n a t e   =   N ' f a l s e ' ,   @ m a x _ c o n c u r r e n t _ m e r g e   =   0 ,   @ m a x _ c o n c u r r e n t _ d y n a m i c _ s n a p s h o t s   =   0 ,   @ u s e _ p a r t i t i o n _ g r o u p s   =   n u l l ,   @ p u b l i c a t i o n _ c o m p a t i b i l i t y _ l e v e l   =   N ' 1 0 0 R T M ' ,   @ r e p l i c a t e _ d d l   =   1 ,   @ a l l o w _ s u b s c r i b e r _ i n i t i a t e d _ s n a p s h o t   =   N ' f a l s e ' ,   @ a l l o w _ w e b _ s y n c h r o n i z a t i o n   =   N ' f a l s e ' ,   @ a l l o w _ p a r t i t i o n _ r e a l i g n m e n t   =   N ' t r u e ' ,   @ r e t e n t i o n _ p e r i o d _ u n i t   =   N ' d a y s ' ,   @ c o n f l i c t _ l o g g i n g   =   N ' b o t h ' ,   @ a u t o m a t i c _ r e i n i t i a l i z a t i o n _ p o l i c y   =   0  
+ G O  
+  
+  
+ e x e c   s p _ a d d p u b l i c a t i o n _ s n a p s h o t   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ f r e q u e n c y _ t y p e   =   1 ,   @ f r e q u e n c y _ i n t e r v a l   =   0 ,   @ f r e q u e n c y _ r e l a t i v e _ i n t e r v a l   =   0 ,   @ f r e q u e n c y _ r e c u r r e n c e _ f a c t o r   =   0 ,   @ f r e q u e n c y _ s u b d a y   =   0 ,   @ f r e q u e n c y _ s u b d a y _ i n t e r v a l   =   0 ,   @ a c t i v e _ s t a r t _ t i m e _ o f _ d a y   =   5 0 0 ,   @ a c t i v e _ e n d _ t i m e _ o f _ d a y   =   2 3 5 9 5 9 ,   @ a c t i v e _ s t a r t _ d a t e   =   0 ,   @ a c t i v e _ e n d _ d a t e   =   0 ,   @ j o b _ l o g i n   =   n u l l ,   @ j o b _ p a s s w o r d   =   n u l l ,   @ p u b l i s h e r _ s e c u r i t y _ m o d e   =   0 ,   @ p u b l i s h e r _ l o g i n   =   N ' s a ' ,   @ p u b l i s h e r _ p a s s w o r d   =   N ' '  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' B R A N C H ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' B R A N C H ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' B R A N C H _ T Y P E ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' B R A N C H _ T Y P E ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' C A T E G O R Y ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' C A T E G O R Y ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' C L I E N T ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' C L I E N T ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' C L I E N T _ T Y P E ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' C L I E N T _ T Y P E ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' J O B ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' J O B ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' P A C K A G E ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' P A C K A G E ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' P A C K A G E _ B R A N C H ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' P A C K A G E _ B R A N C H ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' P A C K A G E _ T Y P E ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' P A C K A G E _ T Y P E ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' P R O V I N C E ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' P R O V I N C E ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' U B I C A T I O N ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' U B I C A T I O N ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   N ' [ u _ p l a c e ]   =   ' ' C a r t a g o ' ' ' ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' W O R K E R ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' W O R K E R ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' m a n u a l ' ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' W O R K S _ O N ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' W O R K S _ O N ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' m a n u a l ' ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ e x e c   s p _ a d d m e r g e f i l t e r   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' P A C K A G E _ B R A N C H ' ,   @ f i l t e r n a m e   =   N ' P A C K A G E _ B R A N C H _ B R A N C H ' ,   @ j o i n _ a r t i c l e n a m e   =   N ' B R A N C H ' ,   @ j o i n _ f i l t e r c l a u s e   =   N ' [ B R A N C H ] . [ b _ i d ]   =   [ P A C K A G E _ B R A N C H ] . [ p b _ i d _ b r a n c h ] ' ,   @ j o i n _ u n i q u e _ k e y   =   1 ,   @ f i l t e r _ t y p e   =   1 ,   @ f o r c e _ i n v a l i d a t e _ s n a p s h o t   =   1 ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1  
+ G O  
+ e x e c   s p _ a d d m e r g e f i l t e r   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' W O R K S _ O N ' ,   @ f i l t e r n a m e   =   N ' W O R K S _ O N _ B R A N C H ' ,   @ j o i n _ a r t i c l e n a m e   =   N ' B R A N C H ' ,   @ j o i n _ f i l t e r c l a u s e   =   N ' [ B R A N C H ] . [ b _ i d ]   =   [ W O R K S _ O N ] . [ w o _ b r a n c h ] ' ,   @ j o i n _ u n i q u e _ k e y   =   1 ,   @ f i l t e r _ t y p e   =   1 ,   @ f o r c e _ i n v a l i d a t e _ s n a p s h o t   =   1 ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1  
+ G O  
+ e x e c   s p _ a d d m e r g e f i l t e r   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' C L I E N T ' ,   @ f i l t e r n a m e   =   N ' C L I E N T _ P A C K A G E _ B R A N C H ' ,   @ j o i n _ a r t i c l e n a m e   =   N ' P A C K A G E _ B R A N C H ' ,   @ j o i n _ f i l t e r c l a u s e   =   N ' [ P A C K A G E _ B R A N C H ] . [ p b _ i d _ c l i e n t ]   =   [ C L I E N T ] . [ c _ i d ] ' ,   @ j o i n _ u n i q u e _ k e y   =   1 ,   @ f i l t e r _ t y p e   =   1 ,   @ f o r c e _ i n v a l i d a t e _ s n a p s h o t   =   1 ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1  
+ G O  
+ e x e c   s p _ a d d m e r g e f i l t e r   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' B R A N C H ' ,   @ f i l t e r n a m e   =   N ' B R A N C H _ U B I C A T I O N ' ,   @ j o i n _ a r t i c l e n a m e   =   N ' U B I C A T I O N ' ,   @ j o i n _ f i l t e r c l a u s e   =   N ' [ U B I C A T I O N ] . [ u _ i d ]   =   [ B R A N C H ] . [ b _ u b i c a t i o n ] ' ,   @ j o i n _ u n i q u e _ k e y   =   1 ,   @ f i l t e r _ t y p e   =   1 ,   @ f o r c e _ i n v a l i d a t e _ s n a p s h o t   =   1 ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1  
+ G O  
+ e x e c   s p _ a d d m e r g e f i l t e r   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ a r t i c l e   =   N ' W O R K E R ' ,   @ f i l t e r n a m e   =   N ' W O R K E R _ W O R K S _ O N ' ,   @ j o i n _ a r t i c l e n a m e   =   N ' W O R K S _ O N ' ,   @ j o i n _ f i l t e r c l a u s e   =   N ' [ W O R K S _ O N ] . [ w o _ w o r k e r ]   =   [ W O R K E R ] . [ w _ i d ] ' ,   @ j o i n _ u n i q u e _ k e y   =   1 ,   @ f i l t e r _ t y p e   =   1 ,   @ f o r c e _ i n v a l i d a t e _ s n a p s h o t   =   1 ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1  
+ G O  
+ ÿþu s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ r e p l i c a t i o n d b o p t i o n   @ d b n a m e   =   N ' C O U R I E R T E C _ H E R E D I A ' ,   @ o p t n a m e   =   N ' m e r g e   p u b l i s h ' ,   @ v a l u e   =   N ' t r u e '  
+ G O  
+ - -   A d d i n g   t h e   m e r g e   p u b l i c a t i o n  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e p u b l i c a t i o n   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ d e s c r i p t i o n   =   N ' M e r g e   p u b l i c a t i o n   o f   d a t a b a s e   ' ' C O U R I E R T E C _ H E R E D I A ' '   f r o m   P u b l i s h e r   ' ' C A R - G R M H U A S T O \ F A B S Q L ' ' . ' ,   @ s y n c _ m o d e   =   N ' n a t i v e ' ,   @ r e t e n t i o n   =   1 4 ,   @ a l l o w _ p u s h   =   N ' t r u e ' ,   @ a l l o w _ p u l l   =   N ' t r u e ' ,   @ a l l o w _ a n o n y m o u s   =   N ' t r u e ' ,   @ e n a b l e d _ f o r _ i n t e r n e t   =   N ' f a l s e ' ,   @ s n a p s h o t _ i n _ d e f a u l t f o l d e r   =   N ' t r u e ' ,   @ c o m p r e s s _ s n a p s h o t   =   N ' f a l s e ' ,   @ f t p _ p o r t   =   2 1 ,   @ f t p _ s u b d i r e c t o r y   =   N ' f t p ' ,   @ f t p _ l o g i n   =   N ' a n o n y m o u s ' ,   @ a l l o w _ s u b s c r i p t i o n _ c o p y   =   N ' f a l s e ' ,   @ a d d _ t o _ a c t i v e _ d i r e c t o r y   =   N ' f a l s e ' ,   @ d y n a m i c _ f i l t e r s   =   N ' f a l s e ' ,   @ c o n f l i c t _ r e t e n t i o n   =   1 4 ,   @ k e e p _ p a r t i t i o n _ c h a n g e s   =   N ' f a l s e ' ,   @ a l l o w _ s y n c t o a l t e r n a t e   =   N ' f a l s e ' ,   @ m a x _ c o n c u r r e n t _ m e r g e   =   0 ,   @ m a x _ c o n c u r r e n t _ d y n a m i c _ s n a p s h o t s   =   0 ,   @ u s e _ p a r t i t i o n _ g r o u p s   =   n u l l ,   @ p u b l i c a t i o n _ c o m p a t i b i l i t y _ l e v e l   =   N ' 1 0 0 R T M ' ,   @ r e p l i c a t e _ d d l   =   1 ,   @ a l l o w _ s u b s c r i b e r _ i n i t i a t e d _ s n a p s h o t   =   N ' f a l s e ' ,   @ a l l o w _ w e b _ s y n c h r o n i z a t i o n   =   N ' f a l s e ' ,   @ a l l o w _ p a r t i t i o n _ r e a l i g n m e n t   =   N ' t r u e ' ,   @ r e t e n t i o n _ p e r i o d _ u n i t   =   N ' d a y s ' ,   @ c o n f l i c t _ l o g g i n g   =   N ' b o t h ' ,   @ a u t o m a t i c _ r e i n i t i a l i z a t i o n _ p o l i c y   =   0  
+ G O  
+  
+  
+ e x e c   s p _ a d d p u b l i c a t i o n _ s n a p s h o t   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ f r e q u e n c y _ t y p e   =   1 ,   @ f r e q u e n c y _ i n t e r v a l   =   0 ,   @ f r e q u e n c y _ r e l a t i v e _ i n t e r v a l   =   0 ,   @ f r e q u e n c y _ r e c u r r e n c e _ f a c t o r   =   0 ,   @ f r e q u e n c y _ s u b d a y   =   0 ,   @ f r e q u e n c y _ s u b d a y _ i n t e r v a l   =   0 ,   @ a c t i v e _ s t a r t _ t i m e _ o f _ d a y   =   5 0 0 ,   @ a c t i v e _ e n d _ t i m e _ o f _ d a y   =   2 3 5 9 5 9 ,   @ a c t i v e _ s t a r t _ d a t e   =   0 ,   @ a c t i v e _ e n d _ d a t e   =   0 ,   @ j o b _ l o g i n   =   n u l l ,   @ j o b _ p a s s w o r d   =   n u l l ,   @ p u b l i s h e r _ s e c u r i t y _ m o d e   =   0 ,   @ p u b l i s h e r _ l o g i n   =   N ' s a ' ,   @ p u b l i s h e r _ p a s s w o r d   =   N ' '  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' B R A N C H ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' B R A N C H ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' B R A N C H _ T Y P E ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' B R A N C H _ T Y P E ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' C A T E G O R Y ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' C A T E G O R Y ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' C L I E N T ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' C L I E N T ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' C L I E N T _ T Y P E ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' C L I E N T _ T Y P E ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' J O B ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' J O B ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' P A C K A G E ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' P A C K A G E ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' P A C K A G E _ B R A N C H ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' P A C K A G E _ B R A N C H ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' P A C K A G E _ T Y P E ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' P A C K A G E _ T Y P E ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' P R O V I N C E ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' P R O V I N C E ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' U B I C A T I O N ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' U B I C A T I O N ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' a u t o ' ,   @ p u b _ i d e n t i t y _ r a n g e   =   1 0 0 0 0 ,   @ i d e n t i t y _ r a n g e   =   1 0 0 0 ,   @ t h r e s h o l d   =   8 0 ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   N ' [ u _ p l a c e ]   = ' ' S a n   J o s é ' ' ' ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' W O R K E R ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' W O R K E R ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' m a n u a l ' ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e a r t i c l e   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' W O R K S _ O N ' ,   @ s o u r c e _ o w n e r   =   N ' d b o ' ,   @ s o u r c e _ o b j e c t   =   N ' W O R K S _ O N ' ,   @ t y p e   =   N ' t a b l e ' ,   @ d e s c r i p t i o n   =   n u l l ,   @ c r e a t i o n _ s c r i p t   =   n u l l ,   @ p r e _ c r e a t i o n _ c m d   =   N ' d r o p ' ,   @ s c h e m a _ o p t i o n   =   0 x 0 0 0 0 0 0 0 1 0 C 0 3 4 F D 1 ,   @ i d e n t i t y r a n g e m a n a g e m e n t o p t i o n   =   N ' m a n u a l ' ,   @ d e s t i n a t i o n _ o w n e r   =   N ' d b o ' ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1 ,   @ c o l u m n _ t r a c k i n g   =   N ' f a l s e ' ,   @ s u b s e t _ f i l t e r c l a u s e   =   n u l l ,   @ v e r t i c a l _ p a r t i t i o n   =   N ' f a l s e ' ,   @ v e r i f y _ r e s o l v e r _ s i g n a t u r e   =   1 ,   @ a l l o w _ i n t e r a c t i v e _ r e s o l v e r   =   N ' f a l s e ' ,   @ f a s t _ m u l t i c o l _ u p d a t e p r o c   =   N ' t r u e ' ,   @ c h e c k _ p e r m i s s i o n s   =   0 ,   @ s u b s c r i b e r _ u p l o a d _ o p t i o n s   =   0 ,   @ d e l e t e _ t r a c k i n g   =   N ' t r u e ' ,   @ c o m p e n s a t e _ f o r _ e r r o r s   =   N ' f a l s e ' ,   @ s t r e a m _ b l o b _ c o l u m n s   =   N ' f a l s e ' ,   @ p a r t i t i o n _ o p t i o n s   =   0  
+ G O  
+  
+  
+ e x e c   s p _ a d d m e r g e f i l t e r   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' P A C K A G E _ B R A N C H ' ,   @ f i l t e r n a m e   =   N ' P A C K A G E _ B R A N C H _ B R A N C H ' ,   @ j o i n _ a r t i c l e n a m e   =   N ' B R A N C H ' ,   @ j o i n _ f i l t e r c l a u s e   =   N ' [ B R A N C H ] . [ b _ i d ]   =   [ P A C K A G E _ B R A N C H ] . [ p b _ i d _ b r a n c h ] ' ,   @ j o i n _ u n i q u e _ k e y   =   1 ,   @ f i l t e r _ t y p e   =   1 ,   @ f o r c e _ i n v a l i d a t e _ s n a p s h o t   =   1 ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1  
+ G O  
+ e x e c   s p _ a d d m e r g e f i l t e r   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' W O R K S _ O N ' ,   @ f i l t e r n a m e   =   N ' W O R K S _ O N _ B R A N C H ' ,   @ j o i n _ a r t i c l e n a m e   =   N ' B R A N C H ' ,   @ j o i n _ f i l t e r c l a u s e   =   N ' [ B R A N C H ] . [ b _ i d ]   =   [ W O R K S _ O N ] . [ w o _ b r a n c h ] ' ,   @ j o i n _ u n i q u e _ k e y   =   1 ,   @ f i l t e r _ t y p e   =   1 ,   @ f o r c e _ i n v a l i d a t e _ s n a p s h o t   =   1 ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1  
+ G O  
+ e x e c   s p _ a d d m e r g e f i l t e r   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' C L I E N T ' ,   @ f i l t e r n a m e   =   N ' C L I E N T _ P A C K A G E _ B R A N C H ' ,   @ j o i n _ a r t i c l e n a m e   =   N ' P A C K A G E _ B R A N C H ' ,   @ j o i n _ f i l t e r c l a u s e   =   N ' [ P A C K A G E _ B R A N C H ] . [ p b _ i d _ c l i e n t ]   =   [ C L I E N T ] . [ c _ i d ] ' ,   @ j o i n _ u n i q u e _ k e y   =   1 ,   @ f i l t e r _ t y p e   =   1 ,   @ f o r c e _ i n v a l i d a t e _ s n a p s h o t   =   1 ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1  
+ G O  
+ e x e c   s p _ a d d m e r g e f i l t e r   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' B R A N C H ' ,   @ f i l t e r n a m e   =   N ' B R A N C H _ U B I C A T I O N ' ,   @ j o i n _ a r t i c l e n a m e   =   N ' U B I C A T I O N ' ,   @ j o i n _ f i l t e r c l a u s e   =   N ' [ U B I C A T I O N ] . [ u _ i d ]   =   [ B R A N C H ] . [ b _ u b i c a t i o n ] ' ,   @ j o i n _ u n i q u e _ k e y   =   1 ,   @ f i l t e r _ t y p e   =   1 ,   @ f o r c e _ i n v a l i d a t e _ s n a p s h o t   =   1 ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1  
+ G O  
+ e x e c   s p _ a d d m e r g e f i l t e r   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ a r t i c l e   =   N ' W O R K E R ' ,   @ f i l t e r n a m e   =   N ' W O R K E R _ W O R K S _ O N ' ,   @ j o i n _ a r t i c l e n a m e   =   N ' W O R K S _ O N ' ,   @ j o i n _ f i l t e r c l a u s e   =   N ' [ W O R K S _ O N ] . [ w o _ w o r k e r ]   =   [ W O R K E R ] . [ w _ i d ] ' ,   @ j o i n _ u n i q u e _ k e y   =   1 ,   @ f i l t e r _ t y p e   =   1 ,   @ f o r c e _ i n v a l i d a t e _ s n a p s h o t   =   1 ,   @ f o r c e _ r e i n i t _ s u b s c r i p t i o n   =   1  
+ G O  
+ /* DATABASE CREATION SCRIPT */
+
+CREATE DATABASE COURIERTEC_HEREDIA
+USE COURIERTEC_HEREDIA
+
+CREATE TABLE CLIENT_TYPE (
+	ct_id INT IDENTITY(1,1) PRIMARY KEY,
+	ct_name VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE PROVINCE (
+	p_id INT IDENTITY(1,1) PRIMARY KEY,
+	p_name VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE CLIENT (
+	c_id VARCHAR(30) PRIMARY KEY,
+	c_account INT IDENTITY(1,1) NOT NULL UNIQUE,
+	c_name VARCHAR(30) NOT NULL,
+	c_lname VARCHAR(50) NOT NULL,
+	c_telephone VARCHAR(30) NOT NULL,
+	c_username VARCHAR(20) NOT NULL UNIQUE,
+	c_password VARCHAR(16) NOT NULL,
+	c_type INT FOREIGN KEY REFERENCES CLIENT_TYPE(ct_id),
+	c_province INT FOREIGN KEY REFERENCES PROVINCE(p_id)
+);
+
+CREATE TABLE CATEGORY (
+	ca_id INT IDENTITY(1,1) PRIMARY KEY,
+	ca_name VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE PACKAGE_TYPE (
+	pt_id INT IDENTITY(1,1) PRIMARY KEY,
+	pt_name VARCHAR(50) NOT NULL,
+	pt_price_kg INT NOT NULL,
+	pt_category INT FOREIGN KEY REFERENCES CATEGORY(ca_id)
+);
+
+CREATE TABLE PACKAGE (
+	p_id INT IDENTITY(1,1) PRIMARY KEY,
+	p_reception_date DATE NOT NULL,
+	p_value INT NOT NULL,
+	p_weight INT NOT NULL,
+	p_type INT FOREIGN KEY REFERENCES PACKAGE_TYPE(pt_id)
+);
+
+CREATE TABLE UBICATION (
+	u_id INT IDENTITY(1,1) PRIMARY KEY,
+	u_place VARCHAR(50) NOT NULL,
+	u_address VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE JOB (
+	j_id INT IDENTITY(1,1) PRIMARY KEY,
+	j_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE WORKER (
+	w_id VARCHAR(30) PRIMARY KEY,
+	w_name VARCHAR(30) NOT NULL,
+	w_lname VARCHAR(50) NOT NULL,
+	w_telephone VARCHAR(30) NOT NULL,
+	w_username VARCHAR(20) NOT NULL UNIQUE,
+	w_password VARCHAR(16) NOT NULL
+);
+
+CREATE TABLE BRANCH_TYPE (
+	bt_id INT IDENTITY(1,1) PRIMARY KEY,
+	bt_name VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE BRANCH (
+	b_id INT IDENTITY(1,1) PRIMARY KEY,
+	b_telephone VARCHAR(30) NOT NULL,
+	b_schedule VARCHAR(30) NOT NULL,
+	b_email VARCHAR(100) NOT NULL,
+	b_type INT FOREIGN KEY REFERENCES BRANCH_TYPE(bt_id),
+	b_ubication INT FOREIGN KEY REFERENCES UBICATION(u_id)
+);
+
+CREATE TABLE WORKS_ON (
+	wo_branch INT FOREIGN KEY REFERENCES BRANCH(b_id),
+	wo_worker VARCHAR(30) FOREIGN KEY REFERENCES WORKER(w_id),
+	wo_job INT FOREIGN KEY REFERENCES JOB(j_id)
+);
+
+CREATE TABLE PACKAGE_BRANCH (
+	pb_id INT IDENTITY(1,1) PRIMARY KEY,
+	pb_total INT,
+	pb_delivery_date DATE,
+	pb_id_package INT FOREIGN KEY REFERENCES PACKAGE(p_id),
+	pb_id_client VARCHAR(30) FOREIGN KEY REFERENCES CLIENT(c_id),
+	pb_id_branch INT FOREIGN KEY REFERENCES BRANCH(b_id)
+);/* POPULATION SCRIPT */
+
+INSERT INTO PROVINCE VALUES
+	('San José', NEWID()),
+	('Alajuela', NEWID()), 
+	('Cartago', NEWID()), 
+	('Heredia', NEWID()),
+	('Guanacaste', NEWID()),
+	('Puntarenas', NEWID()),
+	('Limón', NEWID())
+
+INSERT INTO CLIENT_TYPE VALUES
+	('Platino', NEWID()),
+	('Oro', NEWID()),
+	('Bronce', NEWID())
+
+INSERT INTO CLIENT VALUES
+	('207440546', 'Ernesto', 'Ulate Ramírez', '88649896', 'eulate', 'eulate123', 1, 2, NEWID()),
+	('304960870', 'Fabián', 'Astorga Cerdas', '84333333', 'fabastorga', 'fabastorga123', 3, 3, NEWID()),
+	('102540254', 'Walter', 'Blanco Harris', '88888888', 'wblanco', 'wblanco123', 3, 1, NEWID()),
+	('102230469', 'Wendi', 'Salazar Pereira', '86665555', 'wsalazar', 'wendi123', 3, 5, NEWID()),
+	('700540556', 'Heyreel', 'Davis Smith', '62151254', 'hdavis', 'hdavis123',  3, 7, NEWID()),
+	('408550653', 'Jecsynior', 'Aguilar Rojas', '45511254', 'jaguilar', 'jaguilar123', 1, 4, NEWID())
+
+INSERT INTO CATEGORY VALUES
+	('Regular', NEWID()), ('Especial', NEWID())
+
+INSERT INTO PACKAGE_TYPE VALUES
+	('Electrónicos', 2000, 1, NEWID()),
+	('Ropa', 455, 1, NEWID()),
+	('Juguetes', 800, 1, NEWID()),
+	('Elementos para el hogar', 600, 1, NEWID()),
+	('Comida', 5000, 2, NEWID()),
+	('Baterías', 7450, 2, NEWID()),
+	('Químicos', 11000, 2, NEWID()),
+	('Herramientas', 6700, 2, NEWID())
+
+INSERT INTO PACKAGE VALUES
+	('2018-01-09', 12300, 2, 8, NEWID()),
+	('2018-06-10', 5545, 1, 5, NEWID()),
+	('2018-03-21', 4500, 5, 4, NEWID()),
+	('2018-02-28', 12000, 1, 2, NEWID()),
+	('2018-05-12', 3600, 4, 1, NEWID()),
+	('2018-03-25', 7800, 6, 7, NEWID()),
+	('2018-07-10', 45000, 5, 4, NEWID()),
+	('2018-01-04', 25000, 2, 3, NEWID()),
+	('2018-04-26', 24025, 10, 5, NEWID()),
+	('2018-09-07', 12456, 4, 3, NEWID()),
+	('2018-06-12', 12014, 4, 8, NEWID()),
+	('2018-04-14', 7895, 3, 4, NEWID()),
+	('2018-05-01', 4520, 5, 1, NEWID()),
+	('2018-02-28', 1234, 1, 2, NEWID()),
+	('2018-06-18', 12400, 5, 4, NEWID())
+
+INSERT INTO UBICATION VALUES
+	('Heredia', '100m Norte de los Tribunales de Justicia', NEWID()),
+	('San José', 'Diagonal al Auto Mercado de Plaza Víquez', NEWID()),
+	('Cartago', 'A la vuelta del Sanatorio Durán', NEWID())
+
+INSERT INTO JOB VALUES
+	('Gerente', NEWID()),
+	('Administrador', NEWID()),
+	('Empleado', NEWID())
+
+INSERT INTO WORKER VALUES
+	('102540254', 'Pedro', 'Uribe Matamoros', '84568752', 'puribe', 'puribe123', NEWID()),
+	('403250892', 'Jorge', 'Pérez Suárez', '45662154', 'jperez', 'jperez123', NEWID()),
+	('405890226', 'Violeta', 'Venegas Ramírez', '30210212', 'vvenegas', 'vvenegas123', NEWID()),
+	('302560256', 'Heidi', 'Prendas Johnson', '87789541', 'hprendas', 'hprendas123', NEWID()),
+	('820201235', 'Tumiko', 'Meyama Soto', '78952145', 'tmeyama', 'tmeyama123', NEWID()),
+	('122021254', 'Claudio', 'Sandí Huertas', '65452154', 'csandi', 'csandi123', NEWID()),
+	('402540255', 'Widman', 'Meneses Sequeira', '12542154', 'wmeneses', 'wmeneses', NEWID()),
+	('203360569', 'Espaider', 'Mora Villarán', '78995456', 'emora', 'emora', NEWID())
+
+INSERT INTO BRANCH_TYPE VALUES
+	('Central', NEWID()),
+	('Secundaria', NEWID())
+
+INSERT INTO BRANCH VALUES
+	('22909595', '9:00-18:00', 'couriertec_heredia@courierTEC.cr', 1, 1, NEWID() ),
+	('22919595', '7:30-16:45', 'couriertec_sanjose@courierTEC.cr', 2, 2, NEWID() ),
+	('25509595', '10:00-20:00', 'couriertec_cartago@courierTEC.cr', 2, 3 , NEWID())
+
+INSERT INTO WORKS_ON VALUES
+	(1 , '102540254', 1, NEWID()),
+	(1 , '403250892', 2, NEWID()),
+	(1 , '405890226', 3, NEWID()),
+	(2 , '302560256', 2, NEWID()),
+	(2 , '820201235', 3, NEWID()),
+	(3 , '122021254', 2, NEWID()),
+	(3 , '402540255', 3, NEWID()),
+	(3 , '203360569', 3, NEWID())
+
+INSERT INTO PACKAGE_BRANCH VALUES
+	(5000, NULL, 1, '102540254', 2, NEWID()),
+	(2000, NULL, 2, '102540254', 1, NEWID()),
+	(12000, '2018-01-09', 3, '304960870', 3, NEWID()),
+	(14000, '2018-04-09', 4, '102230469', 2, NEWID()),
+	(18000, NULL, 5, '102230469', 2, NEWID()),
+	(190000, '2018-04-09', 6, '102230469', 2, NEWID()),
+	(10000, '2018-04-09', 7, '700540556', 3, NEWID()),
+	(12500, NULL, 8, '700540556', 3, NEWID()),
+	(32000, '2018-04-09', 9, '408550653', 1, NEWID()),
+	(900100, NULL, 10, '207440546', 1, NEWID()),
+	(56090, NULL, 11, '207440546', 1, NEWID()),
+	(24000, '2018-04-09', 12, '207440546', 1, NEWID()),
+	(50000000, NULL, 13, '408550653', 1, NEWID()),
+	(125000, NULL, 14, '304960870', 3, NEWID()),
+	(78900, NULL, 15, '102540254', 2, NEWID())
+
+
+
+
+
+ÿþ- - - - - - - - - - - - - - - - - B E G I N :   S c r i p t   t o   b e   r u n   a t   P u b l i s h e r   ' C A R - G R M H U A S T O \ F A B S Q L ' - - - - - - - - - - - - - - - - -  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e s u b s c r i p t i o n   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ s u b s c r i b e r   =   N ' V I R T U A L E R N E S T O \ C R I M S O N S Q L ' ,   @ s u b s c r i b e r _ d b   =   N ' C O U R I E R T E C _ C A R T A G O ' ,   @ s u b s c r i p t i o n _ t y p e   =   N ' P u s h ' ,   @ s y n c _ t y p e   =   N ' A u t o m a t i c ' ,   @ s u b s c r i b e r _ t y p e   =   N ' G l o b a l ' ,   @ s u b s c r i p t i o n _ p r i o r i t y   =   7 5 ,   @ d e s c r i p t i o n   =   n u l l ,   @ u s e _ i n t e r a c t i v e _ r e s o l v e r   =   N ' F a l s e '  
+ e x e c   s p _ a d d m e r g e p u s h s u b s c r i p t i o n _ a g e n t   @ p u b l i c a t i o n   =   N ' p u b _ C a r t a g o ' ,   @ s u b s c r i b e r   =   N ' V I R T U A L E R N E S T O \ C R I M S O N S Q L ' ,   @ s u b s c r i b e r _ d b   =   N ' C O U R I E R T E C _ C A R T A G O ' ,   @ j o b _ l o g i n   =   n u l l ,   @ j o b _ p a s s w o r d   =   n u l l ,   @ s u b s c r i b e r _ s e c u r i t y _ m o d e   =   0 ,   @ s u b s c r i b e r _ l o g i n   =   N ' s a ' ,   @ s u b s c r i b e r _ p a s s w o r d   =   n u l l ,   @ p u b l i s h e r _ s e c u r i t y _ m o d e   =   1 ,   @ f r e q u e n c y _ t y p e   =   6 4 ,   @ f r e q u e n c y _ i n t e r v a l   =   0 ,   @ f r e q u e n c y _ r e l a t i v e _ i n t e r v a l   =   0 ,   @ f r e q u e n c y _ r e c u r r e n c e _ f a c t o r   =   0 ,   @ f r e q u e n c y _ s u b d a y   =   0 ,   @ f r e q u e n c y _ s u b d a y _ i n t e r v a l   =   0 ,   @ a c t i v e _ s t a r t _ t i m e _ o f _ d a y   =   0 ,   @ a c t i v e _ e n d _ t i m e _ o f _ d a y   =   2 3 5 9 5 9 ,   @ a c t i v e _ s t a r t _ d a t e   =   2 0 1 8 0 9 2 3 ,   @ a c t i v e _ e n d _ d a t e   =   9 9 9 9 1 2 3 1 ,   @ e n a b l e d _ f o r _ s y n c m g r   =   N ' F a l s e '  
+ G O  
+ - - - - - - - - - - - - - - - - - E N D :   S c r i p t   t o   b e   r u n   a t   P u b l i s h e r   ' C A R - G R M H U A S T O \ F A B S Q L ' - - - - - - - - - - - - - - - - -  
+  
+ ÿþ- - - - - - - - - - - - - - - - - B E G I N :   S c r i p t   t o   b e   r u n   a t   P u b l i s h e r   ' C A R - G R M H U A S T O \ F A B S Q L ' - - - - - - - - - - - - - - - - -  
+ u s e   [ C O U R I E R T E C _ H E R E D I A ]  
+ e x e c   s p _ a d d m e r g e s u b s c r i p t i o n   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ s u b s c r i b e r   =   N ' D E S K T O P - 4 3 1 7 M 7 7 \ C R I M S O N S Q L ' ,   @ s u b s c r i b e r _ d b   =   N ' C O U R I E R T E C _ S J ' ,   @ s u b s c r i p t i o n _ t y p e   =   N ' P u s h ' ,   @ s y n c _ t y p e   =   N ' A u t o m a t i c ' ,   @ s u b s c r i b e r _ t y p e   =   N ' G l o b a l ' ,   @ s u b s c r i p t i o n _ p r i o r i t y   =   7 5 ,   @ d e s c r i p t i o n   =   n u l l ,   @ u s e _ i n t e r a c t i v e _ r e s o l v e r   =   N ' F a l s e '  
+ e x e c   s p _ a d d m e r g e p u s h s u b s c r i p t i o n _ a g e n t   @ p u b l i c a t i o n   =   N ' p u b _ S J ' ,   @ s u b s c r i b e r   =   N ' D E S K T O P - 4 3 1 7 M 7 7 \ C R I M S O N S Q L ' ,   @ s u b s c r i b e r _ d b   =   N ' C O U R I E R T E C _ S J ' ,   @ j o b _ l o g i n   =   n u l l ,   @ j o b _ p a s s w o r d   =   n u l l ,   @ s u b s c r i b e r _ s e c u r i t y _ m o d e   =   0 ,   @ s u b s c r i b e r _ l o g i n   =   N ' s a ' ,   @ s u b s c r i b e r _ p a s s w o r d   =   n u l l ,   @ p u b l i s h e r _ s e c u r i t y _ m o d e   =   1 ,   @ f r e q u e n c y _ t y p e   =   6 4 ,   @ f r e q u e n c y _ i n t e r v a l   =   0 ,   @ f r e q u e n c y _ r e l a t i v e _ i n t e r v a l   =   0 ,   @ f r e q u e n c y _ r e c u r r e n c e _ f a c t o r   =   0 ,   @ f r e q u e n c y _ s u b d a y   =   0 ,   @ f r e q u e n c y _ s u b d a y _ i n t e r v a l   =   0 ,   @ a c t i v e _ s t a r t _ t i m e _ o f _ d a y   =   0 ,   @ a c t i v e _ e n d _ t i m e _ o f _ d a y   =   2 3 5 9 5 9 ,   @ a c t i v e _ s t a r t _ d a t e   =   2 0 1 8 0 9 2 3 ,   @ a c t i v e _ e n d _ d a t e   =   9 9 9 9 1 2 3 1 ,   @ e n a b l e d _ f o r _ s y n c m g r   =   N ' F a l s e '  
+ G O  
+ - - - - - - - - - - - - - - - - - E N D :   S c r i p t   t o   b e   r u n   a t   P u b l i s h e r   ' C A R - G R M H U A S T O \ F A B S Q L ' - - - - - - - - - - - - - - - - -  
+  
+ /* Monto recaudado en una sucursal */
+CREATE PROCEDURE branchTotalAmount @branch VARCHAR(30)
+AS
+BEGIN
+SELECT SUM(pb_total) AS "Dinero recaudado"
+FROM PACKAGE_BRANCH
+INNER JOIN BRANCH ON PACKAGE_BRANCH.pb_id_branch = BRANCH.b_id
+INNER JOIN UBICATION ON BRANCH.b_ubication = UBICATION.u_id
+WHERE pb_delivery_date IS NOT NULL AND u_place=@Branch
+END
+
+EXEC branchTotalAmount "Heredia"
+
+/* Monto recaudado por sucursal para período específico */
+CREATE PROCEDURE branchAmount @branch VARCHAR(30), @initialDate DATE, @finalDate DATE 
+AS
+BEGIN
+SELECT SUM(pb_total) AS "Monto Total"
+FROM PACKAGE_BRANCH
+INNER JOIN BRANCH ON PACKAGE_BRANCH.pb_id_branch = BRANCH.b_id
+INNER JOIN UBICATION ON BRANCH.b_ubication = UBICATION.u_id
+WHERE pb_delivery_date IS NOT NULL AND pb_delivery_date>@initialDate AND pb_delivery_date<@finalDate AND u_place=@branch
+END
+
+EXEC branchAmount "Heredia", '2017-02-10', '2019-02-10'
+
+/* Cantidad de paquetes según cliente en un período */ 
+CREATE PROCEDURE packagesPerClient @initialDate DATE, @finalDate DATE
+AS
+BEGIN
+SELECT c_id as ID, c_name as Nombre, c_lname as Apellido, pb_id as Orden, p_reception_date as Fecha  
+FROM CLIENT 
+INNER JOIN PACKAGE_BRANCH ON CLIENT.c_id = PACKAGE_BRANCH.pb_id_client
+INNER JOIN PACKAGE ON PACKAGE_BRANCH.pb_id_package = PACKAGE.p_id
+WHERE p_reception_date<@finalDate AND p_reception_date>@initialDate
+ORDER BY c_id
+END
+
+EXEC packagesPerClient '2017-02-10', '2019-02-10'
+
+/* Monto promedio pagado por cliente en un período*/
+CREATE PROCEDURE averageAmountPerClient @initialDate DATE, @finalDate DATE
+AS
+BEGIN
+SELECT c_name AS Nombre, c_lname AS Apellido, AVG(pb_total) AS "Promedio"
+FROM PACKAGE_BRANCH 
+INNER JOIN CLIENT ON CLIENT.c_id = PACKAGE_BRANCH.pb_id_client
+INNER JOIN PACKAGE ON PACKAGE_BRANCH.pb_id_package = PACKAGE.p_id
+WHERE p_reception_date<@finalDate AND p_reception_date>@initialDate
+GROUP BY c_name, c_lname
+END
+
+EXEC averageAmountPerClient '2017-02-10', '2019-02-10'
+
+/* Monto total para un tipo de paquete */
+CREATE PROCEDURE packageTypeAmount @type INT, @initialDate DATE, @finalDate DATE
+AS
+BEGIN
+SELECT p_type AS "Tipo paquete", SUM(p_value) AS "Total de montos"
+FROM PACKAGE
+WHERE p_reception_date>@initialDate AND p_reception_date<@finalDate AND p_type=@type
+GROUP BY p_type
+END
+
+EXEC packageTypeAmount 3, '2017-02-10', '2019-02-10'
+
+/* Tres mejores clientes (monto mayor en paquetes traídos) en un período*/
+CREATE PROCEDURE bestClients @initialDate DATE, @finalDate DATE
+AS
+BEGIN
+SELECT TOP 3 sum(pb_total) AS "Monto Total", c_name AS Nombre, c_lname AS Apellido
+FROM PACKAGE_BRANCH
+INNER JOIN CLIENT ON PACKAGE_BRANCH.pb_id_client = CLIENT.c_id
+INNER JOIN PACKAGE ON PACKAGE_BRANCH.pb_id_package = PACKAGE.p_id
+WHERE p_reception_date<@finalDate and p_reception_date>@initialDate
+GROUP BY c_name, c_lname
+ORDER BY "Monto Total" DESC
+END
+
+EXEC bestClients '2017-02-10', '2019-02-10'
